@@ -14,7 +14,7 @@ The python sync script for variables.
 ## Imports ##
 #############
 from airflow.models import Variable
-from airflow.utils.db import create_session
+from airflow.utils.session import create_session
 
 
 #############

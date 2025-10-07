@@ -14,7 +14,7 @@ The python sync script for pools.
 ## Imports ##
 #############
 from airflow.models import Pool
-from airflow.utils.db import create_session
+from airflow.utils.session import create_session
 from croniter import croniter
 from datetime import datetime
 from typing import Tuple

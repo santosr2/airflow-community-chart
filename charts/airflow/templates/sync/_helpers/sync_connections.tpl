@@ -15,7 +15,7 @@ The python sync script for connections.
 ## Imports ##
 #############
 from airflow.models import Connection
-from airflow.utils.db import create_session
+from airflow.utils.session import create_session
 
 
 #############

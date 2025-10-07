@@ -142,7 +142,7 @@ spec:
                   except ImportError:
                       # `BaseJob` was renamed to `Job` in airflow 2.6.0
                       from airflow.jobs.base_job import BaseJob as Job
-                  from airflow.utils.db import create_session
+                  from airflow.utils.session import create_session
                   from airflow.utils.net import get_hostname
 
                   with create_session() as session:
