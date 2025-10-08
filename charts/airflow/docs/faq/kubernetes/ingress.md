@@ -15,7 +15,7 @@ For example, assuming you have an Ingress Controller with an IngressClass named 
 ```yaml
 airflow:
   config: 
-    AIRFLOW__WEBSERVER__BASE_URL: "http://example.com/airflow/"
+    AIRFLOW__API__BASE_URL: "http://example.com/airflow/"
     AIRFLOW__CELERY__FLOWER_URL_PREFIX: "/airflow/flower"
 
 ingress:

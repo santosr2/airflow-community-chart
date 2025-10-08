@@ -36,6 +36,11 @@ airflow:
   ##
   webserverSecretKey: "THIS IS UNSAFE!"
 
+  # Secret key used to encode and decode JWTs: `[api_auth] jwt_secret` in airflow.cfg
+  jwtSecret: ""
+  # Add custom annotations to the JWT secret
+  jwtSecretAnnotations: {}
+
   ## environment variables for airflow configs
   ## - airflow env-vars are structured: "AIRFLOW__{config_section}__{config_name}"
   ## - airflow configuration reference:
@@ -56,7 +61,7 @@ airflow:
   ##     AIRFLOW__SMTP__SMTP_STARTTLS: "False"
   ##
   ##     # domain used in airflow emails
-  ##     AIRFLOW__WEBSERVER__BASE_URL: "http://airflow.example.com"
+  ##     AIRFLOW__API__BASE_URL: "http://airflow.example.com"
   ##
   ##     # ether environment variables
   ##     HTTP_PROXY: "http://proxy.example.com:8080"

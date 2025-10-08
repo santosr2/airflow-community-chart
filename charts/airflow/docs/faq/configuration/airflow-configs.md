@@ -29,7 +29,7 @@ airflow:
     AIRFLOW__SMTP__SMTP_STARTTLS: "False"
     
     ## domain used in airflow emails
-    AIRFLOW__WEBSERVER__BASE_URL: "http://airflow.example.com"
+    AIRFLOW__API__BASE_URL: "http://airflow.example.com"
     
     ## ether environment variables
     HTTP_PROXY: "http://proxy.example.com:8080"

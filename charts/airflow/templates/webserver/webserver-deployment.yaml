@@ -131,7 +131,7 @@ spec:
             failureThreshold: {{ .Values.web.livenessProbe.failureThreshold }}
             httpGet:
               scheme: {{ include "airflow.web.scheme" . }}
-              {{- $airflowUrl := .Values.airflow.config.AIRFLOW__WEBSERVER__BASE_URL | default "" | printf "%s/api/v2/monitor/health" | urlParse }}
+              {{- $airflowUrl := .Values.airflow.config.AIRFLOW__API__BASE_URL | default "" | printf "%s/api/v2/monitor/health" | urlParse }}
               path: {{ get $airflowUrl "path" }}
               port: web
           {{- end }}
@@ -143,7 +143,7 @@ spec:
             failureThreshold: {{ .Values.web.readinessProbe.failureThreshold }}
             httpGet:
               scheme: {{ include "airflow.web.scheme" . }}
-              {{- $airflowUrl := .Values.airflow.config.AIRFLOW__WEBSERVER__BASE_URL | default "" | printf "%s/api/v2/monitor/health" | urlParse }}
+              {{- $airflowUrl := .Values.airflow.config.AIRFLOW__API__BASE_URL | default "" | printf "%s/api/v2/monitor/health" | urlParse }}
               path: {{ get $airflowUrl "path" }}
               port: web
           {{- end }}
