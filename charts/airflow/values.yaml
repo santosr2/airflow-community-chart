@@ -933,6 +933,174 @@ web:
   ##
   extraVolumes: []
 
+dagProcessor:
+  ########################################
+  ## FILE | webserver_config.py
+  ########################################
+  ##
+  webserverConfig:
+    ## if the `webserver_config.py` file is mounted
+    ## - set to false if you wish to mount your own `webserver_config.py` file
+    ##
+    enabled: true
+
+    ## the full content of the `webserver_config.py` file (as a string)
+    ## - docs for Flask-AppBuilder security configs:
+    ##   https://flask-appbuilder.readthedocs.io/en/latest/security.html
+    ##
+    ## ____ EXAMPLE _______________
+    ##   stringOverride: |
+    ##     from airflow import configuration as conf
+    ##     from flask_appbuilder.security.manager import AUTH_DB
+    ##
+    ##     # the SQLAlchemy connection string
+    ##     SQLALCHEMY_DATABASE_URI = conf.get('core', 'SQL_ALCHEMY_CONN')
+    ##
+    ##     # use embedded DB for auth
+    ##     AUTH_TYPE = AUTH_DB
+    ##
+    stringOverride: ""
+
+    ## the name of a Secret containing a `webserver_config.py` key
+    ##
+    existingSecret: ""
+
+  ## the number of dagProcessor Pods to run
+  ## - if you set this >1 we recommend defining a `web.podDisruptionBudget`
+  ##
+  replicas: 1
+
+  ## resource requests/limits for the dagProcessor Pod
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## the nodeSelector configs for the dagProcessor Pods
+  ## - docs for nodeSelector:
+  ##   https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  ##
+  nodeSelector: {}
+
+  ## the affinity configs for the dagProcessor Pods
+  ## - spec for Affinity:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#affinity-v1-core
+  ##
+  affinity: {}
+
+  ## the toleration configs for the dagProcessor Pods
+  ## - spec for Toleration:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#toleration-v1-core
+  ##
+  tolerations: []
+
+  ## the topologySpreadConstraints configs for the dagProcessor Pods
+  ## - docs for topologySpreadConstraints:
+  ##   https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  ##
+  topologySpreadConstraints: []
+
+  ## the security context for the dagProcessor Pods
+  ## - spec for PodSecurityContext:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core
+  ##
+  securityContext: {}
+
+  ## labels for the dagProcessor Deployment
+  ##
+  labels: {}
+
+  ## Pod labels for the dagProcessor Deployment
+  ##
+  podLabels: {}
+
+  ## annotations for the dagProcessor Deployment
+  ##
+  annotations: {}
+
+  ## Pod annotations for the dagProcessor Deployment
+  ##
+  podAnnotations: {}
+
+  ## if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true"
+  ##
+  safeToEvict: true
+
+  ## configs for the PodDisruptionBudget of the dagProcessor Deployment
+  ##
+  podDisruptionBudget:
+    ## if a PodDisruptionBudget resource is created for the dagProcessor Deployment
+    ##
+    enabled: false
+
+    ## the `apiVersion` to use for PodDisruptionBudget resources
+    ## - for Kubernetes 1.21 and later: "policy/v1"
+    ## - for Kubernetes 1.20 and before: "policy/v1beta1"
+    ##
+    apiVersion: policy/v1
+
+    ## the maximum unavailable pods/percentage for the dagProcessor Deployment
+    ##
+    maxUnavailable: ""
+
+    ## the minimum available pods/percentage for the dagProcessor Deployment
+    ##
+    minAvailable: ""
+
+  ## configs for the Service of the dagProcessor Pods
+  ##
+  service:
+    annotations: {}
+    sessionAffinity: "None"
+    sessionAffinityConfig: {}
+    type: ClusterIP
+    externalPort: 8080
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    nodePort:
+      http: ""
+
+  ## configs for the dagProcessor Pods' liveness probe
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+  ## extra pip packages to install in the dagProcessor Pods
+  ##
+  ## ____ EXAMPLE _______________
+  ##   extraPipPackages:
+  ##     - "SomeProject==1.0.0"
+  ##
+  extraPipPackages: []
+
+  ## extra containers for the dagProcessor Pods
+  ## - spec for Container:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core
+  ##
+  extraContainers: []
+
+  ## extra init-containers for the dagProcessor Pods
+  ## - spec of Container:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core
+  ##
+  extraInitContainers: []
+
+  ## extra VolumeMounts for the dagProcessor Pods
+  ## - spec for VolumeMount:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volumemount-v1-core
+  ##
+  extraVolumeMounts: []
+
+  ## extra Volumes for the dagProcessor Pods
+  ## - spec for Volume:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volume-v1-core
+  ##
+  extraVolumes: []
+
 ###################################
 ## COMPONENT | Airflow Workers
 ###################################
