@@ -29,6 +29,9 @@ airflow:
     AIRFLOW__SMTP__SMTP_STARTTLS: "False"
     
     ## domain used in airflow emails
+    # For Airflow v2
+    AIRFLOW__WEBSERVER__BASE_URL: "http://airflow.example.com"
+    # For Airflow v3
     AIRFLOW__API__BASE_URL: "http://airflow.example.com"
     
     ## ether environment variables

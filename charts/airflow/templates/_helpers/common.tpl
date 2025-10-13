@@ -13,9 +13,7 @@ The version of airflow being deployed.
 - empty if no version can be extracted
 */}}
 {{- define "airflow.image.version" -}}
-{{- if eq .Values.airflow.image.repository "apache/airflow" -}}
-{{- regexFind `^[0-9]+\.[0-9]+\.[0-9]+` .Values.airflow.image.tag -}}
-{{- end -}}
+{{- regexFind `^[0-9]+\.[0-9]+\.[0-9]+` (.Values.airflow.image.tag | toString) -}}
 {{- end -}}
 
 {{/*
@@ -78,6 +76,30 @@ The app protocol used by the webserver.
 NOTE: this sets the `appProtocol` of the Service port (only important for Istio users)
 */}}
 {{- define "airflow.web.appProtocol" -}}
+{{- if and (.Values.airflow.config.AIRFLOW__WEBSERVER__WEB_SERVER_SSL_CERT) (.Values.airflow.config.AIRFLOW__WEBSERVER__WEB_SERVER_SSL_KEY) -}}
+https
+{{- else -}}
+http
+{{- end -}}
+{{- end -}}
+
+{{/*
+The scheme (HTTP, HTTPS) used by the API server.
+NOTE: this is used in the liveness/readiness probes of the API server
+*/}}
+{{- define "airflow.apiServer.scheme" -}}
+{{- if and (.Values.airflow.config.AIRFLOW__WEBSERVER__WEB_SERVER_SSL_CERT) (.Values.airflow.config.AIRFLOW__WEBSERVER__WEB_SERVER_SSL_KEY) -}}
+HTTPS
+{{- else -}}
+HTTP
+{{- end -}}
+{{- end -}}
+
+{{/*
+The app protocol used by the API server.
+NOTE: this sets the `appProtocol` of the Service port (only important for Istio users)
+*/}}
+{{- define "airflow.apiServer.appProtocol" -}}
 {{- if and (.Values.airflow.config.AIRFLOW__WEBSERVER__WEB_SERVER_SSL_CERT) (.Values.airflow.config.AIRFLOW__WEBSERVER__WEB_SERVER_SSL_KEY) -}}
 https
 {{- else -}}

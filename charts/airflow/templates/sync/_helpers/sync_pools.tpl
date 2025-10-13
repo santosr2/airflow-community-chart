@@ -14,7 +14,11 @@ The python sync script for pools.
 ## Imports ##
 #############
 from airflow.models import Pool
+{{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
 from airflow.utils.session import create_session
+{{- else }}
+from airflow.utils.db import create_session
+{{- end }}
 from croniter import croniter
 from datetime import datetime
 from typing import Tuple

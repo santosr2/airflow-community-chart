@@ -533,11 +533,21 @@ The list of `env` for web/scheduler/worker/flower Pods
 EXAMPLE USAGE: {{ include "airflow.env" (dict "Release" .Release "Values" .Values "CONNECTION_CHECK_MAX_COUNT" "0") }}
 */}}
 {{- define "airflow.env" }}
+{{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
+{{- if not .Values.airflow.jwtSecret }}
 - name: AIRFLOW__API_AUTH__JWT_SECRET
   valueFrom:
     secretKeyRef:
       name: {{ printf "%s-jwt-secret" (include "airflow.fullname" .) }}
       key: jwt-secret
+{{- else }}
+- name: AIRFLOW__API_AUTH__JWT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.airflow.jwtSecret }}
+      key: {{ .Values.airflow.jwtSecretKey }}
+{{- end }}
+{{- end }}
 {{- /* set DATABASE_USER */ -}}
 {{- if .Values.postgresql.enabled }}
 - name: DATABASE_USER

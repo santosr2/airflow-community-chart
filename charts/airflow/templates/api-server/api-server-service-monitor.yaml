@@ -1,11 +1,11 @@
-{{- if and .Values.serviceMonitor.enabled (semverCompare "<3.0.0" (include "airflow.image.version" .)) }}
+{{- if and (.Values.serviceMonitor.enabled) (semverCompare ">=3.0.0" (include "airflow.image.version" .)) }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ include "airflow.fullname" . }}
   labels:
     app: {{ include "airflow.labels.app" . }}
-    component: web
+    component: api-server
     chart: {{ include "airflow.labels.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -16,10 +16,10 @@ spec:
   selector:
     matchLabels:
       app: {{ include "airflow.labels.app" . }}
-      component: web
+      component: api-server
       release: {{ .Release.Name }}
   endpoints:
-    - port: web
+    - port: api-server
       path: {{ .Values.serviceMonitor.path }}
       interval: {{ .Values.serviceMonitor.interval }}
 {{- end }}

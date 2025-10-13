@@ -46,6 +46,9 @@ airflow:
     AIRFLOW__SMTP__SMTP_STARTTLS: "False"
 
     ## domain used in airflow emails
+    # For Airflow v2
+    AIRFLOW__WEBSERVER__BASE_URL: "https://airflow-cluster1.example.com/"
+    # For Airflow v3
     AIRFLOW__API__BASE_URL: "https://airflow-cluster1.example.com/"
 
   ## a list of users to create

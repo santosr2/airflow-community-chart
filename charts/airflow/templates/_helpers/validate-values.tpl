@@ -29,6 +29,11 @@
     {{ required "When using airflow 2.X.X, `airflow.legacyCommands` must be `false`!" nil }}
     {{- end }}
   {{ end }}
+  {{- if hasPrefix "3." .Values.airflow.image.tag }}
+    {{- if .Values.airflow.legacyCommands }}
+    {{ required "When using airflow 3.X.X, `airflow.legacyCommands` must be `false`!" nil }}
+    {{- end }}
+  {{ end }}
 {{- end }}
 
 {{/* Checks for `airflow.executor` */}}
@@ -147,13 +152,24 @@
     {{- if .Values.ingress.web.path | hasSuffix "/" }}
     {{ required "The `ingress.web.path` should NOT include a trailing '/'!" nil }}
     {{- end }}
-    {{- if .Values.airflow.config.AIRFLOW__API__BASE_URL }}
-      {{- $webUrl := .Values.airflow.config.AIRFLOW__API__BASE_URL | urlParse }}
-      {{- if not (eq (.Values.ingress.web.path | trimSuffix "/*") (get $webUrl "path")) }}
-      {{ required (printf "The `ingress.web.path` must be compatible with `airflow.config.AIRFLOW__API__BASE_URL`! (try setting AIRFLOW__API__BASE_URL to 'http://{HOSTNAME}%s', rather than '%s')" (.Values.ingress.web.path | trimSuffix "/*") .Values.airflow.config.AIRFLOW__API__BASE_URL) nil }}
+    {{- if or .Values.airflow.config.AIRFLOW__API__BASE_URL .Values.airflow.config.AIRFLOW__WEBSERVER__BASE_URL }}
+      {{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
+        {{- $webUrl := .Values.airflow.config.AIRFLOW__API__BASE_URL | urlParse }}
+        {{- if not (eq (.Values.ingress.web.path | trimSuffix "/*") (get $webUrl "path")) }}
+        {{ required (printf "The `ingress.web.path` must be compatible with `airflow.config.AIRFLOW__API__BASE_URL`! (try setting AIRFLOW__API__BASE_URL to 'http://{HOSTNAME}%s', rather than '%s')" (.Values.ingress.web.path | trimSuffix "/*") .Values.airflow.config.AIRFLOW__API__BASE_URL) nil }}
+        {{- end }}
+      {{- else }}
+        {{- $webUrl := .Values.airflow.config.AIRFLOW__WEBSERVER__BASE_URL | urlParse }}
+        {{- if not (eq (.Values.ingress.web.path | trimSuffix "/*") (get $webUrl "path")) }}
+        {{ required (printf "The `ingress.web.path` must be compatible with `airflow.config.AIRFLOW__WEBSERVER__BASE_URL`! (try setting AIRFLOW__WEBSERVER__BASE_URL to 'http://{HOSTNAME}%s', rather than '%s')" (.Values.ingress.web.path | trimSuffix "/*") .Values.airflow.config.AIRFLOW__WEBSERVER__BASE_URL) nil }}
+        {{- end }}
       {{- end }}
     {{- else }}
+      {{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
       {{ required (printf "If `ingress.web.path` is set, then `airflow.config.AIRFLOW__API__BASE_URL` must be set! (try setting AIRFLOW__API__BASE_URL to 'http://{HOSTNAME}%s')" (.Values.ingress.web.path | trimSuffix "/*")) nil }}
+      {{- else }}
+      {{ required (printf "If `ingress.web.path` is set, then `airflow.config.AIRFLOW__WEBSERVER__BASE_URL` must be set! (try setting AIRFLOW__WEBSERVER__BASE_URL to 'http://{HOSTNAME}%s')" (.Values.ingress.web.path | trimSuffix "/*")) nil }}
+      {{- end }}
     {{- end }}
   {{- end }}
 
@@ -219,5 +235,122 @@
     {{- if .Values.redis.enabled }}
     {{ required "If `externalRedis.host` is set, then `redis.enabled` should be `false`!" nil }}
     {{- end }}
+  {{- end }}
+{{- end }}
+
+{{/* Checks for insecure default secrets */}}
+{{- if eq .Values.airflow.fernetKey "7T512UXSSmBOkpWimFHIVb8jK6lfmSAvx4mO6Arehnc=" }}
+###############################################################################
+WARNING: Using default fernet key is EXTREMELY INSECURE
+###############################################################################
+  The current fernetKey is the chart's default value and is publicly known.
+  This allows ANYONE to decrypt your Airflow connections and variables.
+
+  IMMEDIATE ACTION REQUIRED:
+  1. Generate a new fernet key:
+     python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+  2. Set the key in your values:
+     airflow:
+       fernetKey: "<your-generated-key>"
+
+  3. For production, use external secret manager (AWS Secrets Manager, Vault, etc.)
+
+  See: charts/airflow/docs/faq/security/set-fernet-key.md
+###############################################################################
+{{- end }}
+
+{{- if eq .Values.airflow.webserverSecretKey "THIS IS UNSAFE!" }}
+###############################################################################
+WARNING: Using default webserver secret key is EXTREMELY INSECURE
+###############################################################################
+  The current webserverSecretKey is the chart's default value and is publicly known.
+  This enables session hijacking and unauthorized access.
+
+  IMMEDIATE ACTION REQUIRED:
+  1. Generate a new secret key:
+     python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+  2. Set the key in your values:
+     airflow:
+       webserverSecretKey: "<your-generated-key>"
+
+  3. For production, use external secret manager (AWS Secrets Manager, Vault, etc.)
+
+  See: charts/airflow/docs/faq/security/set-webserver-secret-key.md
+###############################################################################
+{{- end }}
+
+{{- if .Values.airflow.users }}
+{{- range $user := .Values.airflow.users }}
+{{- if and (eq $user.username "admin") (eq $user.password "admin") }}
+###############################################################################
+WARNING: Using default admin credentials is EXTREMELY INSECURE
+###############################################################################
+  The default admin/admin credentials are publicly known and must be changed.
+
+  IMMEDIATE ACTION REQUIRED:
+  1. Remove the default admin user or change the password:
+     airflow:
+       users:
+         - username: admin
+           password: "<strong-password>"  # Or remove entirely
+           role: Admin
+           email: admin@example.com
+           firstName: admin
+           lastName: admin
+
+  2. For production, disable default users and use external authentication:
+     - LDAP integration
+     - OAuth (Google, GitHub, etc.)
+     - SAML
+
+  See: charts/airflow/docs/faq/security/
+###############################################################################
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/* Checks for Airflow 3.0+ requirements */}}
+{{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
+  {{/* API Server must have at least 1 replica */}}
+  {{- if lt (int .Values.apiServer.replicas) 1 }}
+###############################################################################
+ERROR: Airflow 3.0+ requires at least 1 API Server replica
+###############################################################################
+    In Airflow 3.0+, the API Server is a mandatory component that replaces
+    the traditional Webserver. All components communicate through the API Server.
+
+    Current apiServer.replicas: {{ .Values.apiServer.replicas }}
+    Recommended: apiServer.replicas >= 1
+###############################################################################
+  {{ required "apiServer.replicas must be >= 1 for Airflow 3.0+" nil }}
+  {{- end }}
+
+  {{/* DAG Processor must have at least 1 replica */}}
+  {{- if lt (int .Values.dagProcessor.replicas) 1 }}
+###############################################################################
+ERROR: Airflow 3.0+ requires at least 1 DAG Processor replica
+###############################################################################
+    In Airflow 3.0+, the DAG Processor is a separate mandatory component
+    that handles DAG parsing independently from the Scheduler.
+
+    Current dagProcessor.replicas: {{ .Values.dagProcessor.replicas }}
+    Recommended: dagProcessor.replicas >= 1
+###############################################################################
+  {{ required "dagProcessor.replicas must be >= 1 for Airflow 3.0+" nil }}
+  {{- end }}
+
+  {{/* Validate JWT secret is not using default/example values */}}
+  {{- if or (eq .Values.airflow.jwtSecret "changeme") (eq .Values.airflow.jwtSecret "example") }}
+###############################################################################
+WARNING: Using an example JWT secret value is INSECURE
+###############################################################################
+    The current value of airflow.jwtSecret appears to be an example value.
+    This is highly insecure and should be changed immediately.
+
+    Generate a secure JWT secret:
+      python -c "import secrets; print(secrets.token_urlsafe(32))"
+###############################################################################
   {{- end }}
 {{- end }}

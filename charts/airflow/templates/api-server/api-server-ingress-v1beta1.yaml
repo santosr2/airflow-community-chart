@@ -1,0 +1,51 @@
+{{- if and (.Values.ingress.enabled) (eq .Values.ingress.apiVersion "networking.k8s.io/v1beta1") (semverCompare ">=3.0.0" (include "airflow.image.version" .)) }}
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "airflow.fullname" . }}-api-server
+  {{- if .Values.ingress.apiServer.annotations }}
+  annotations:
+    {{- toYaml .Values.ingress.apiServer.annotations | nindent 4 }}
+  {{- end }}
+  labels:
+    app: {{ include "airflow.labels.app" . }}
+    component: api-server
+    chart: {{ include "airflow.labels.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- if .Values.ingress.apiServer.labels }}
+    {{- toYaml .Values.ingress.apiServer.labels | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.ingress.apiServer.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.apiServer.host }}
+      {{- if .Values.ingress.apiServer.tls.secretName }}
+      secretName: {{ .Values.ingress.apiServer.tls.secretName }}
+      {{- end }}
+  {{- end }}
+  {{- if .Values.ingress.apiServer.ingressClassName }}
+  ingressClassName: {{ .Values.ingress.apiServer.ingressClassName }}
+  {{- end }}  
+  rules:
+    - host: {{ .Values.ingress.apiServer.host }}
+      http:
+        paths:
+          {{- range .Values.ingress.apiServer.precedingPaths }}
+          - path: {{ .path }}
+            backend:
+              serviceName: {{ .serviceName }}
+              servicePort: {{ .servicePort }}
+          {{- end }}
+          - path: {{ .Values.ingress.apiServer.path }}
+            backend:
+              serviceName: {{ include "airflow.fullname" . }}-api-server
+              servicePort: api-server
+          {{- range .Values.ingress.apiServer.succeedingPaths }}
+          - path: {{ .path }}
+            backend:
+              serviceName: {{ .serviceName }}
+              servicePort: {{ .servicePort }}
+          {{- end }}
+{{- end }}

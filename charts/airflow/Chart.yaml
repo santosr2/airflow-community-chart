@@ -1,7 +1,8 @@
 apiVersion: v2
 description: Airflow Helm Chart (User Community) - the standard way to deploy Apache Airflow on Kubernetes with Helm
 name: airflow
-version: 8.9.0
+type: application
+version: 9.0.0
 appVersion: 2.8.4
 icon: https://avatars.githubusercontent.com/u/71061241
 home: https://github.com/airflow-helm/charts/tree/main/charts/airflow
@@ -16,10 +17,10 @@ keywords:
   - workflow
 dependencies:
   - name: postgresql
-    version: 8.6.4
-    repository: https://charts.helm.sh/stable
+    version: 12.12.10
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: postgresql.enabled
   - name: redis
-    version: 10.5.7
-    repository: https://charts.helm.sh/stable
+    version: 18.19.4
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: redis.enabled
