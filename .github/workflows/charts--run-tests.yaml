@@ -1,0 +1,55 @@
+name: "test charts"
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "charts/**"
+
+jobs:
+  lint_and_install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4.2.0
+        with:
+          version: v3.13.3
+
+      - name: Install chart-testing
+        uses: helm/chart-testing-action@v2.6.1
+        with:
+          version: v3.10.1
+
+      - name: List Changed Charts (chart-testing)
+        id: list-changed
+        run: |
+          CHANGED=$(ct list-changed --config ct-config.yaml)
+          if [[ -n "$CHANGED" ]]; then
+            echo "::set-output name=CHANGED::true"
+          fi
+
+      - name: Lint Charts (chart-testing)
+        if: ${{ steps.list-changed.outputs.CHANGED == 'true' }}
+        run: |
+          ct lint --config ct-config.yaml --check-version-increment=false
+
+      - name: Create kind Cluster
+        uses: helm/kind-action@v1
+        if: ${{ steps.list-changed.outputs.CHANGED == 'true' }}
+        timeout-minutes: 5
+        with:
+          version: v0.22.0
+          kubectl_version: v1.27.13
+          node_image: kindest/node:v1.27.11@sha256:681253009e68069b8e01aad36a1e0fa8cf18bb0ab3e5c4069b2e65cafdd70843
+          wait: 300s
+
+      - name: Install Charts (chart-testing)
+        if: ${{ steps.list-changed.outputs.CHANGED == 'true' }}
+        run: |
+          ct install --config ct-config.yaml
