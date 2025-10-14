@@ -56,7 +56,7 @@ Originally created in 2017, it has since helped thousands of companies create pr
 ## Key Features
 
 - __Support for Airflow Versions:__
-   - [`1.10` | `2.0` | `2.1` | `2.2` | `2.3` | `2.4` | `2.5` | `2.6` | `2.7` | `2.8` | `2.9` | `2.10` | `3.0` | `3.1`](#airflow-version-support)
+   - [`1.10` | `2.0` | `2.1` | `2.2` | `2.3` | `2.4` | `2.5` | `2.6` | `2.7` | `2.8` | `2.9` | `2.10`](#airflow-version-support)
 - __Support for Airflow Executors:__ 
    - [`CeleryExecutor` | `KubernetesExecutor` | `CeleryKubernetesExecutor`](#airflow-executor-support)
 - __Easily Connect with your Database:__
@@ -158,7 +158,7 @@ Here is a brief overview of the chart's development from 2017 until today:
 
 The following table lists the __airflow versions__ supported by this chart (set the version with [`airflow.image.tag`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/configuration/airflow-version.md) value).
 
-Chart Version → <br> Airflow Version ↓  | `7.0.0` - `7.16.0` | `8.0.0` - `8.5.3` | `8.6.0` | `8.6.1` - `8.7.0` | `8.7.1` | `8.8.0` | `8.9.0` | `9.0.0+`
+Chart Version → <br> Airflow Version ↓  | `7.0.0` - `7.16.0` | `8.0.0` - `8.5.3` | `8.6.0` | `8.6.1` - `8.7.0` | `8.7.1` | `8.8.0` | `8.9.0+`
 --- | --- | --- | --- | --- | --- | --- | ---
 `1.10.X` | ✔️ | ✔️ <sub>[1]</sub> | ✔️️ <sub>[1]</sub> | ✔️️ <sub>[1]</sub> | ✔️️ <sub>[1]</sub> | ✔️️ <sub>[1]</sub> | ✔️️ <sub>[1]</sub>
 `2.0.X` | ❌ | ✔️ | ✔️ | ✔️ | ✔️️ | ✔️️ | ✔️️
@@ -172,16 +172,12 @@ Chart Version → <br> Airflow Version ↓  | `7.0.0` - `7.16.0` | `8.0.0` - `8.
 `2.8.X` | ❌ | ❌ | ❌ | ❌ | ❌ | ✔️️ | ✔️️
 `2.9.X` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌️ | ✔️️
 `2.10.X` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌️ | ⚠️ <sub>[3]</sub>
-`3.0.X` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌️ | ✔️️ <sub>[4]</sub>
-`3.1.X` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌️ | ✔️️ <sub>[4]</sub>
 
 <sub>[1] you must set `airflow.legacyCommands = true` when using airflow version `1.10.X`</sub>
 <br>
 <sub>[2] the [Deferrable Operators & Triggers](https://airflow.apache.org/docs/apache-airflow/stable/concepts/deferring.html) feature won't work, as there is no `airflow triggerer` Deployment</sub>
 <br>
 <sub>[3] airflow version `2.10.1` has a [serious issue](https://github.com/apache/airflow/issues/42111) with git-sync, use `2.10.2` or later</sub>
-<br>
-<sub>[4] airflow 3.0+ requires `airflow.jwtSecret` to be set, and uses API Server + DAG Processor instead of Webserver - see the [Airflow 3.0 Migration Guide](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/guides/airflow-3-migration.md)</sub>
 
 ## Airflow Executor Support
 
@@ -211,7 +207,6 @@ Parameter | Description | Default
 `airflow.executor` | the airflow executor type to use | `CeleryExecutor`
 `airflow.fernetKey` | the fernet encryption key (sets `AIRFLOW__CORE__FERNET_KEY`) | `7T512UXSSmBOkpWimFHIVb8jK6lfmSAvx4mO6Arehnc=`
 `airflow.webserverSecretKey` | the secret_key for flask (sets `AIRFLOW__WEBSERVER__SECRET_KEY`) | `THIS IS UNSAFE!`
-`airflow.jwtSecret` | the JWT secret for Airflow 3.0+ internal API authentication (sets `AIRFLOW__API_AUTH__JWT_SECRET`) | `""`
 `airflow.config` | environment variables for airflow configs | `{}`
 `airflow.users` | a list of users to create | `<see values.yaml>`
 `airflow.usersTemplates` | bash-like templates to be used in `airflow.users` | `<see values.yaml>`
@@ -304,65 +299,6 @@ Parameter | Description | Default
 `web.extraInitContainers` | extra init-containers for the web Pods | `[]`
 `web.extraVolumeMounts` | extra VolumeMounts for the web Pods | `[]`
 `web.extraVolumes` | extra Volumes for the web Pods | `[]`
-
-</details>
-
-<details>
-<summary><code>apiServer.*</code> (Airflow 3.0+)</summary>
-
-Parameter | Description | Default
---- | --- | ---
-`apiServer.webserverConfig.*` | configs to generate webserver_config.py | `<see values.yaml>`
-`apiServer.replicas` | the number of API Server Pods to run | `1`
-`apiServer.resources` | resource requests/limits for the API Server Pods | `{}`
-`apiServer.nodeSelector` | the nodeSelector configs for the API Server Pods | `{}`
-`apiServer.affinity` | the affinity configs for the API Server Pods | `{}`
-`apiServer.tolerations` | the toleration configs for the API Server Pods | `[]`
-`apiServer.topologySpreadConstraints` | the topologySpreadConstraints configs for the API Server Pods | `[]`
-`apiServer.securityContext` | the security context for the API Server Pods | `{}`
-`apiServer.labels` | labels for the API Server Deployment | `{}`
-`apiServer.podLabels` | Pod labels for the API Server Deployment | `{}`
-`apiServer.annotations` | annotations for the API Server Deployment | `{}`
-`apiServer.podAnnotations` | Pod annotations for the API Server Deployment | `{}`
-`apiServer.safeToEvict` | if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true" | `true`
-`apiServer.podDisruptionBudget.*` | configs for the PodDisruptionBudget of the API Server Deployment | `<see values.yaml>`
-`apiServer.service.*` | configs for the Service of the API Server pods | `<see values.yaml>`
-`apiServer.readinessProbe.*` | configs for the API Server Pods' readiness probe | `<see values.yaml>`
-`apiServer.livenessProbe.*` | configs for the API Server Pods' liveness probe | `<see values.yaml>`
-`apiServer.extraPipPackages` | extra pip packages to install in the API Server Pods | `[]`
-`apiServer.extraContainers` | extra containers for the API Server Pods | `[]`
-`apiServer.extraInitContainers` | extra init-containers for the API Server Pods | `[]`
-`apiServer.extraVolumeMounts` | extra VolumeMounts for the API Server Pods | `[]`
-`apiServer.extraVolumes` | extra Volumes for the API Server Pods | `[]`
-
-</details>
-
-<details>
-<summary><code>dagProcessor.*</code> (Airflow 3.0+)</summary>
-
-Parameter | Description | Default
---- | --- | ---
-`dagProcessor.webserverConfig.*` | configs to generate webserver_config.py | `<see values.yaml>`
-`dagProcessor.replicas` | the number of DAG Processor Pods to run | `1`
-`dagProcessor.resources` | resource requests/limits for the DAG Processor Pods | `{}`
-`dagProcessor.nodeSelector` | the nodeSelector configs for the DAG Processor Pods | `{}`
-`dagProcessor.affinity` | the affinity configs for the DAG Processor Pods | `{}`
-`dagProcessor.tolerations` | the toleration configs for the DAG Processor Pods | `[]`
-`dagProcessor.topologySpreadConstraints` | the topologySpreadConstraints configs for the DAG Processor Pods | `[]`
-`dagProcessor.securityContext` | the security context for the DAG Processor Pods | `{}`
-`dagProcessor.labels` | labels for the DAG Processor Deployment | `{}`
-`dagProcessor.podLabels` | Pod labels for the DAG Processor Deployment | `{}`
-`dagProcessor.annotations` | annotations for the DAG Processor Deployment | `{}`
-`dagProcessor.podAnnotations` | Pod annotations for the DAG Processor Deployment | `{}`
-`dagProcessor.safeToEvict` | if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true" | `true`
-`dagProcessor.podDisruptionBudget.*` | configs for the PodDisruptionBudget of the DAG Processor Deployment | `<see values.yaml>`
-`dagProcessor.service.*` | configs for the Service of the DAG Processor pods | `<see values.yaml>`
-`dagProcessor.livenessProbe.*` | configs for the DAG Processor Pods' liveness probe | `<see values.yaml>`
-`dagProcessor.extraPipPackages` | extra pip packages to install in the DAG Processor Pods | `[]`
-`dagProcessor.extraContainers` | extra containers for the DAG Processor Pods | `[]`
-`dagProcessor.extraInitContainers` | extra init-containers for the DAG Processor Pods | `[]`
-`dagProcessor.extraVolumeMounts` | extra VolumeMounts for the DAG Processor Pods | `[]`
-`dagProcessor.extraVolumes` | extra Volumes for the DAG Processor Pods | `[]`
 
 </details>
 

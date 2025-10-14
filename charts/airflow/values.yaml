@@ -126,6 +126,9 @@ airflow:
   ##     AIRFLOW__SMTP__SMTP_STARTTLS: "False"
   ##
   ##     # domain used in airflow emails
+  ##     # For Airflow v2
+  ##     AIRFLOW__WEBSERVER__BASE_URL: "http://airflow.example.com"
+  ##     # For Airflow v3
   ##     AIRFLOW__API__BASE_URL: "http://airflow.example.com"
   ##
   ##     # JWT Token Configuration (Airflow 3.0+)
@@ -2682,7 +2685,7 @@ redis:
   ##
   image:
     registry: docker.io
-    repository: bitnami/redis
+    repository: bitnamilegacy/redis
     tag: 6.2.14-debian-12-r17
     pullPolicy: IfNotPresent
 
