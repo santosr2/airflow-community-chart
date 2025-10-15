@@ -1,4 +1,4 @@
-{{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
+{{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
 apiVersion: v1
 kind: Service
 metadata:

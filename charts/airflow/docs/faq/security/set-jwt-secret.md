@@ -16,16 +16,22 @@ The JWT (JSON Web Token) secret is only used by **Airflow 3.0 and later**. If yo
 
 ### Auto-Generation (Default)
 
-If you do NOT set `airflow.jwtSecret`, the chart will automatically generate a random JWT secret during deployment. This works fine for:
+If you do NOT set `airflow.jwtSecret` or `airflow.jwtSecretName`, the chart will automatically generate a random JWT secret during deployment. This works fine for:
 - Development environments
 - Testing
 - Single-deployment scenarios
 
-⚠️ **Important**: Auto-generated secrets change on each `helm upgrade`, which will cause all Airflow components to restart with authentication failures until they pick up the new secret.
+⚠️ **CRITICAL FOR PRODUCTION**: Auto-generated secrets change on each `helm upgrade`, which will cause:
+  - **Service Disruption**: All Airflow components will experience authentication failures
+  - **Component Restarts**: All pods (API Server, DAG Processor, Scheduler, Workers) will restart
+  - **Task Failures**: Running tasks may fail due to JWT authentication errors
+  - **Downtime**: Typically 2-5 minutes until all components synchronize with the new secret
+
+**Production Requirement**: ALWAYS set an explicit `jwtSecretName` to avoid these issues.
 
 ### Manual Configuration (Production Recommended)
 
-For production deployments, you should explicitly set `airflow.jwtSecret` to ensure:
+For production deployments, you should explicitly set `airflow.jwtSecretName` to ensure:
 - **Persistence** - Secret remains the same across helm upgrades
 - **Consistency** - All components use the identical secret
 - **Control** - You manage secret rotation on your schedule
@@ -70,7 +76,7 @@ airflow:
 
 ## Option 2 - using a secret (recommended)
 
-You may set the JWT secret from a Kubernetes Secret by referencing it with the `airflow.extraEnv` value.
+You may set the JWT secret from a Kubernetes Secret by referencing it with the `airflow.jwtSecretName` value.
 
 For example, to use the `value` key from the existing Secret called `airflow-jwt-secret`:
 
@@ -79,15 +85,8 @@ airflow:
   image:
     tag: "3.0.1"
 
-  ## IMPORTANT: set jwtSecret to empty string when using extraEnv
-  jwtSecret: ""
-
-  extraEnv:
-    - name: AIRFLOW__API_AUTH__JWT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: airflow-jwt-secret
-          key: value
+  jwtSecretName: "airflow-jwt-secret"
+  jwtSecretKey: "your-secret-key"
 ```
 
 Create the Kubernetes Secret before deploying the chart:
@@ -110,9 +109,6 @@ For example, to use `AIRFLOW__API_AUTH__JWT_SECRET_CMD`:
 airflow:
   image:
     tag: "3.0.1"
-
-  ## WARNING: you must set `jwtSecret` to "", otherwise it will take precedence
-  jwtSecret: ""
 
   ## NOTE: this is only an example, if your value lives in a Secret, you probably want to use "Option 2" above
   config:
@@ -139,14 +135,9 @@ For production deployments, consider using external secret management systems:
 airflow:
   image:
     tag: "3.0.1"
-  jwtSecret: ""
-
-  extraEnv:
-    - name: AIRFLOW__API_AUTH__JWT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: airflow-jwt-secret
-          key: jwt-secret
+  
+  jwtSecretName: airflow-jwt-secret 
+  jwtSecretKey: jwt-secret
 
 # Install External Secrets Operator and create ExternalSecret
 # apiVersion: external-secrets.io/v1beta1
@@ -171,14 +162,9 @@ airflow:
 airflow:
   image:
     tag: "3.0.1"
-  jwtSecret: ""
 
-  extraEnv:
-    - name: AIRFLOW__API_AUTH__JWT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: airflow-jwt-secret
-          key: jwt-secret
+  jwtSecretName: airflow-jwt-secret 
+  jwtSecretKey: jwt-secret
 
 # Use Vault Secrets Operator to sync secrets
 # apiVersion: secrets.hashicorp.com/v1beta1
@@ -200,14 +186,9 @@ airflow:
 airflow:
   image:
     tag: "3.0.1"
-  jwtSecret: ""
 
-  extraEnv:
-    - name: AIRFLOW__API_AUTH__JWT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: airflow-jwt-secret
-          key: jwt-secret
+  jwtSecretName: airflow-jwt-secret 
+  jwtSecretKey: jwt-secret
 
 # Use External Secrets Operator with GCP backend
 # apiVersion: external-secrets.io/v1beta1
@@ -234,6 +215,7 @@ Besides setting the JWT secret, you can configure additional JWT-related setting
 airflow:
   image:
     tag: "3.0.1"
+
   jwtSecret: "your-jwt-secret"
 
   config:
@@ -247,21 +229,51 @@ airflow:
     AIRFLOW__API_AUTH__JWT_LEEWAY: "10"
 ```
 
+### JWT Audience and Issuer (Strongly Recommended)
+
+Apache Airflow official documentation **strongly recommends** setting JWT audience and issuer for production deployments:
+
+```yaml
+airflow:
+  image:
+    tag: "3.1.0"
+
+  jwtSecret: "your-jwt-secret"
+
+  config:
+    ## JWT Audience - strongly recommended per official docs
+    ## Can be a single value or comma-separated list
+    ## The first value is used when generating, others accepted at validation
+    AIRFLOW__API_AUTH__JWT_AUDIENCE: "airflow-prod"
+
+    ## JWT Issuer - strongly recommended per official docs
+    ## Should be unique per Airflow deployment
+    ## Becomes the 'iss' claim in generated tokens
+    AIRFLOW__API_AUTH__JWT_ISSUER: "airflow.example.com"
+```
+
+**Why These Are Important:**
+- **Audience**: Prevents JWT tokens from one environment being used in another
+- **Issuer**: Enables JWT validation to confirm tokens came from your Airflow deployment
+- **Security**: Provides defense-in-depth against token reuse attacks
+
+See: [Airflow Configuration Reference - api_auth section](https://airflow.apache.org/docs/apache-airflow/stable/configurations-ref.html)
+
 ## Troubleshooting
 
 ### JWT Secret Not Persisting Across Upgrades
 
 If you notice Airflow components failing after `helm upgrade`, this is likely because the auto-generated JWT secret changed.
 
-**Solution**: Set an explicit `airflow.jwtSecret` using one of the options above to persist the secret across upgrades.
+**Solution**: Set an explicit `jwt-secret` using one of the options above to persist the secret across upgrades.
 
 ### Error: "Invalid JWT token" or "JWT signature verification failed"
 
 This error usually means the JWT secret is not identical across all components.
 
 **Solutions**:
-1. Ensure `airflow.jwtSecret` is set to the same value for all deployments
-2. If using `extraEnv`, verify the secret exists and has the correct value:
+1. Ensure `jwt-secret` is set to the same value for all deployments
+2. If using `airflow.jwtSecretName`, verify the secret exists and has the correct value:
    ```bash
    kubectl get secret airflow-jwt-secret -o jsonpath='{.data.value}' | base64 -d
    ```

@@ -8,7 +8,7 @@
 {{- $volumeMounts := include "airflow.volumeMounts" (dict "Release" .Release "Values" .Values "extraPipPackages" $extraPipPackages "extraVolumeMounts" $extraVolumeMounts) }}
 {{- $extraVolumes := .Values.apiServer.extraVolumes }}
 {{- $volumes := include "airflow.volumes" (dict "Release" .Release "Values" .Values "extraPipPackages" $extraPipPackages "extraVolumes" $extraVolumes "extraVolumeMounts" $extraVolumeMounts) }}
-{{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
+{{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -123,7 +123,10 @@ spec:
           args:
             - "bash"
             - "-c"
-            - "exec airflow api-server"
+            - |
+              {{- /* TODO: maybe it should be a separated sync step? */}}
+              airflow sync-perm || true
+              exec airflow api-server
           {{- if .Values.apiServer.livenessProbe.enabled }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.apiServer.livenessProbe.initialDelaySeconds }}

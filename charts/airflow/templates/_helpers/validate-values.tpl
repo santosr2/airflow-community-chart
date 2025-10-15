@@ -37,23 +37,55 @@
 {{- end }}
 
 {{/* Checks for `airflow.executor` */}}
-{{- if not (has .Values.airflow.executor (list "CeleryExecutor" "CeleryKubernetesExecutor" "KubernetesExecutor")) }}
-  {{ required "The `airflow.executor` must be one of: [CeleryExecutor, CeleryKubernetesExecutor, KubernetesExecutor]!" nil }}
-{{- end }}
-{{- if eq .Values.airflow.executor "CeleryExecutor" }}
-  {{- if not .Values.workers.enabled }}
-  {{ required "If `airflow.executor=CeleryExecutor`, then `workers.enabled` should be `true`!" nil }}
+{{- if semverCompare "< 3.0.0" (include "airflow.version" .) -}}
+  {{- if .Values.airflow.executors -}}
+    {{ fail "The `airflow.executors` list is only supported in Airflow 3.0+. Use `airflow.executor` instead!" }}
+  {{- end -}}
+  {{- if not (has .Values.airflow.executor (list "CeleryExecutor" "CeleryKubernetesExecutor" "KubernetesExecutor")) }}
+    {{ required "The `airflow.executor` must be one of: [CeleryExecutor, CeleryKubernetesExecutor, KubernetesExecutor]!" nil }}
+  {{- end }}
+  {{- if eq .Values.airflow.executor "CeleryExecutor" }}
+    {{- if not .Values.workers.enabled }}
+    {{ required "If `airflow.executor=CeleryExecutor`, then `workers.enabled` should be `true`!" nil }}
+    {{- end }}
+  {{- end }}
+  {{- if eq .Values.airflow.executor "CeleryKubernetesExecutor" }}
+    {{- if not .Values.workers.enabled }}
+    {{ required "If `airflow.executor=CeleryKubernetesExecutor`, then `workers.enabled` should be `true`!" nil }}
+    {{- end }}
+  {{- end }}
+  {{- if eq .Values.airflow.executor "KubernetesExecutor" }}
+    {{- if or (.Values.workers.enabled) (.Values.flower.enabled) (.Values.redis.enabled) }}
+    {{ required "If `airflow.executor=KubernetesExecutor`, then all of [`workers.enabled`, `flower.enabled`, `redis.enabled`] should be `false`!" nil }}
+    {{- end }}
   {{- end }}
 {{- end }}
-{{- if eq .Values.airflow.executor "CeleryKubernetesExecutor" }}
-  {{- if not .Values.workers.enabled }}
-  {{ required "If `airflow.executor=CeleryKubernetesExecutor`, then `workers.enabled` should be `true`!" nil }}
-  {{- end }}
-{{- end }}
-{{- if eq .Values.airflow.executor "KubernetesExecutor" }}
-  {{- if or (.Values.workers.enabled) (.Values.flower.enabled) (.Values.redis.enabled) }}
-  {{ required "If `airflow.executor=KubernetesExecutor`, then all of [`workers.enabled`, `flower.enabled`, `redis.enabled`] should be `false`!" nil }}
-  {{- end }}
+
+{{- if semverCompare ">= 3.0.0" (include "airflow.version" .) -}}
+  {{- if .Values.airflow.executor -}}
+    {{ fail "The `airflow.executor` setting is deprecated in Airflow 3.0+. Use `airflow.executors` instead!" }}
+  {{- end -}}
+  {{- if not .Values.airflow.executors -}}
+    {{ required "In Airflow 3.0+, you must set at least one executor in the `airflow.executors` list!" nil }}
+  {{- end -}}
+  {{- if has "CeleryKubernetesExecutor" .Values.airflow.executors -}}
+    {{ fail "The `CeleryKubernetesExecutor` is no longer supported. Use multiple executors instead!" }}
+  {{- end -}}
+  {{- range $executor := .Values.airflow.executors -}}
+    {{- if not (has $executor (list "CeleryExecutor" "KubernetesExecutor")) }}
+      {{ required (printf "The `airflow.executors` list can only contain: [CeleryExecutor, KubernetesExecutor]! Found: %s" $executor) nil }}
+    {{- end -}}
+    {{- if eq $executor "CeleryExecutor" -}}
+      {{- if not $.Values.workers.enabled }}
+      {{ required (printf "If `airflow.executors` contains `%s`, then `workers.enabled` should be `true`!" $executor) nil }}
+      {{- end }}
+    {{- end }}
+    {{- if eq $executor "KubernetesExecutor" }}
+      {{- if or ($.Values.workers.enabled) ($.Values.flower.enabled) ($.Values.redis.enabled) }}
+      {{ required "If `airflow.executors` contains `KubernetesExecutor`, then all of [`workers.enabled`, `flower.enabled`, `redis.enabled`] should be `false`!" nil }}
+      {{- end }}
+    {{- end -}}
+  {{- end -}}
 {{- end }}
 
 {{/* Checks for `airflow.config` */}}
@@ -153,7 +185,7 @@
     {{ required "The `ingress.web.path` should NOT include a trailing '/'!" nil }}
     {{- end }}
     {{- if or .Values.airflow.config.AIRFLOW__API__BASE_URL .Values.airflow.config.AIRFLOW__WEBSERVER__BASE_URL }}
-      {{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
+      {{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
         {{- $webUrl := .Values.airflow.config.AIRFLOW__API__BASE_URL | urlParse }}
         {{- if not (eq (.Values.ingress.web.path | trimSuffix "/*") (get $webUrl "path")) }}
         {{ required (printf "The `ingress.web.path` must be compatible with `airflow.config.AIRFLOW__API__BASE_URL`! (try setting AIRFLOW__API__BASE_URL to 'http://{HOSTNAME}%s', rather than '%s')" (.Values.ingress.web.path | trimSuffix "/*") .Values.airflow.config.AIRFLOW__API__BASE_URL) nil }}
@@ -165,7 +197,7 @@
         {{- end }}
       {{- end }}
     {{- else }}
-      {{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
+      {{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
       {{ required (printf "If `ingress.web.path` is set, then `airflow.config.AIRFLOW__API__BASE_URL` must be set! (try setting AIRFLOW__API__BASE_URL to 'http://{HOSTNAME}%s')" (.Values.ingress.web.path | trimSuffix "/*")) nil }}
       {{- else }}
       {{ required (printf "If `ingress.web.path` is set, then `airflow.config.AIRFLOW__WEBSERVER__BASE_URL` must be set! (try setting AIRFLOW__WEBSERVER__BASE_URL to 'http://{HOSTNAME}%s')" (.Values.ingress.web.path | trimSuffix "/*")) nil }}
@@ -260,7 +292,7 @@
 # ###############################################################################
 {{- end }}
 
-{{- if eq .Values.airflow.webserverSecretKey "THIS IS UNSAFE!" }}
+{{- if and (semverCompare "<3.0.0" (include "airflow.version" .)) (eq .Values.airflow.webserverSecretKey "THIS IS UNSAFE!") }}
 # ###############################################################################
 # WARNING: Using default webserver secret key is EXTREMELY INSECURE
 # ###############################################################################
@@ -311,8 +343,32 @@
 {{- end }}
 {{- end }}
 
+{{/* JWT Secret warning for Airflow 3.0+ */}}
+{{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
+{{- if and (not .Values.airflow.jwtSecret) (not .Values.airflow.jwtSecretName) }}
+# ###############################################################################
+# WARNING: JWT secret will be AUTO-GENERATED
+# ###############################################################################
+#   Auto-generated JWT secrets change on every `helm upgrade`, causing:
+#   - Service disruption during upgrades
+#   - Component restarts (API Server, DAG Processor, Scheduler, Workers)
+#   - Task failures due to JWT authentication errors
+#   - Downtime (typically 2-5 minutes)
+#
+#   RECOMMENDED ACTION FOR PRODUCTION:
+#   Set airflow.jwtSecretName to reference a persistent Kubernetes Secret:
+#
+#     airflow:
+#       jwtSecretName: "airflow-jwt-secret"
+#       jwtSecretKey: "jwt-secret"
+#
+#   See: charts/airflow/docs/faq/security/set-jwt-secret.md
+# ###############################################################################
+{{- end }}
+{{- end }}
+
 {{/* Checks for Airflow 3.0+ requirements */}}
-{{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
+{{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
   {{/* API Server must have at least 1 replica */}}
   {{- if lt (int .Values.apiServer.replicas) 1 }}
 # ###############################################################################
@@ -341,16 +397,177 @@
   {{ required "dagProcessor.replicas must be >= 1 for Airflow 3.0+" nil }}
   {{- end }}
 
-  {{/* Validate JWT secret is not using default/example values */}}
-  {{- if or (eq .Values.airflow.jwtSecret "changeme") (eq .Values.airflow.jwtSecret "example") }}
+  {{/* Validate apiServer component is configured instead of web */}}
+  {{- if and (gt (int .Values.web.replicas) 0) (ne (int .Values.web.replicas) 1) }}
 # ###############################################################################
-# WARNING: Using an example JWT secret value is INSECURE
+# ERROR: Airflow 3.0+ requires using `apiServer` instead of `web`
 # ###############################################################################
-#     The current value of airflow.jwtSecret appears to be an example value.
-#     This is highly insecure and should be changed immediately.
+#     Airflow 3.0+ replaces the Webserver component with the API Server.
+#     You are currently configuring `web.replicas`, which is not used in Airflow 3.0+.
 #
-#     Generate a secure JWT secret:
-#       python -c "import secrets; print(secrets.token_urlsafe(32))"
+#     Current configuration:
+#       web.replicas: {{ .Values.web.replicas }}
+#       apiServer.replicas: {{ .Values.apiServer.replicas }}
+#
+#     REQUIRED CHANGES:
+#     1. Remove or set `web.replicas: 0` in your values.yaml
+#     2. Configure `apiServer.replicas: <desired-count>` instead
+#     3. Move any `web.*` configuration (resources, nodeSelector, etc.) to `apiServer.*`
+#
+#     Migration Guide: charts/airflow/docs/guides/airflow-3-migration.md
 # ###############################################################################
+  {{ required "For Airflow 3.0+, use `apiServer` instead of `web`. Set `web.replicas: 0` and configure `apiServer.replicas` instead!" nil }}
+  {{- end }}
+
+  {{/* Validate apiSecretKey is used instead of webserverSecretKey */}}
+  {{- if and .Values.airflow.webserverSecretKey (ne .Values.airflow.webserverSecretKey "THIS IS UNSAFE!") }}
+# ###############################################################################
+# ERROR: Airflow 3.0+ requires `apiSecretKey` instead of `webserverSecretKey`
+# ###############################################################################
+#     Airflow 3.0+ uses `AIRFLOW__API__SECRET_KEY` for Flask session signing,
+#     not `AIRFLOW__WEBSERVER__SECRET_KEY`.
+#
+#     Current configuration:
+#       airflow.webserverSecretKey: (configured)
+#       airflow.apiSecretKey: {{ .Values.airflow.apiSecretKey | default "NOT SET" }}
+#
+#     REQUIRED CHANGES:
+#     1. Copy your webserverSecretKey value to apiSecretKey:
+#        airflow:
+#          apiSecretKey: "<your-current-webserverSecretKey>"
+#          webserverSecretKey: ""  # Clear this value
+#
+#     2. Or generate a new API secret key:
+#        python -c "import secrets; print(secrets.token_urlsafe(32))"
+#
+#     See: charts/airflow/docs/faq/security/set-webserver-secret-key.md
+# ###############################################################################
+  {{ required "For Airflow 3.0+, use `airflow.apiSecretKey` instead of `airflow.webserverSecretKey`!" nil }}
+  {{- end }}
+
+  {{/* Validate ingress.apiServer is used instead of ingress.web */}}
+  {{- if and .Values.ingress.enabled (or .Values.ingress.web.host .Values.ingress.web.path (ne (.Values.ingress.web.annotations | toString) "map[]")) }}
+# ###############################################################################
+# ERROR: Airflow 3.0+ requires `ingress.apiServer` instead of `ingress.web`
+# ###############################################################################
+#     Airflow 3.0+ uses the API Server component, not the Webserver.
+#     You must configure ingress routing to the API Server.
+#
+#     Current configuration:
+#       ingress.web.host: {{ .Values.ingress.web.host | default "NOT SET" }}
+#       ingress.web.path: {{ .Values.ingress.web.path | default "NOT SET" }}
+#
+#     REQUIRED CHANGES:
+#     1. Move your ingress.web configuration to ingress.apiServer:
+#        ingress:
+#          apiServer:
+#            host: "<your-ingress.web.host>"
+#            path: "<your-ingress.web.path>"
+#            annotations: <your-ingress.web.annotations>
+#            # ... other configs
+#          web:
+#            host: ""       # Clear web configuration
+#            path: ""
+#            annotations: {}
+#
+#     2. Update AIRFLOW__API__BASE_URL if using custom paths:
+#        airflow:
+#          config:
+#            AIRFLOW__API__BASE_URL: "http://{HOSTNAME}<path>"
+#
+#     Migration Guide: charts/airflow/docs/guides/airflow-3-migration.md
+# ###############################################################################
+  {{ required "For Airflow 3.0+, use `ingress.apiServer` instead of `ingress.web`!" nil }}
+  {{- end }}
+{{- end }}
+
+{{/* Checks for Airflow <3.0 deprecated configuration */}}
+{{- if semverCompare "<3.0.0" (include "airflow.version" .) }}
+  {{/* Validate web component is configured instead of apiServer */}}
+  {{- if gt (int .Values.apiServer.replicas) 0 }}
+# ###############################################################################
+# ERROR: Airflow <3.0 requires using `web` instead of `apiServer`
+# ###############################################################################
+#     Airflow 2.x and earlier use the Webserver component.
+#     The API Server is only available in Airflow 3.0+.
+#
+#     Current Airflow version: {{ include "airflow.version" . }}
+#     Current configuration:
+#       web.replicas: {{ .Values.web.replicas }}
+#       apiServer.replicas: {{ .Values.apiServer.replicas }}
+#
+#     REQUIRED CHANGES:
+#     1. Set `apiServer.replicas: 0` in your values.yaml
+#     2. Configure `web.replicas: <desired-count>` instead
+#     3. Move any `apiServer.*` configuration to `web.*`
+#
+#     OR upgrade to Airflow 3.0+ to use the API Server component.
+# ###############################################################################
+  {{ required "For Airflow <3.0, use `web` instead of `apiServer`. Set `apiServer.replicas: 0` and configure `web.replicas` instead!" nil }}
+  {{- end }}
+
+  {{/* Validate webserverSecretKey is used instead of apiSecretKey */}}
+  {{- if .Values.airflow.apiSecretKey }}
+# ###############################################################################
+# ERROR: Airflow <3.0 requires `webserverSecretKey` instead of `apiSecretKey`
+# ###############################################################################
+#     Airflow 2.x and earlier use `AIRFLOW__WEBSERVER__SECRET_KEY` for Flask
+#     session signing. The `apiSecretKey` is only used in Airflow 3.0+.
+#
+#     Current Airflow version: {{ include "airflow.version" . }}
+#     Current configuration:
+#       airflow.webserverSecretKey: {{ .Values.airflow.webserverSecretKey | default "NOT SET" }}
+#       airflow.apiSecretKey: (configured)
+#
+#     REQUIRED CHANGES:
+#     1. Copy your apiSecretKey value to webserverSecretKey:
+#        airflow:
+#          webserverSecretKey: "<your-current-apiSecretKey>"
+#          apiSecretKey: ""  # Clear this value
+#
+#     2. Or generate a new webserver secret key:
+#        python -c "import secrets; print(secrets.token_urlsafe(32))"
+#
+#     OR upgrade to Airflow 3.0+ to use apiSecretKey.
+#
+#     See: charts/airflow/docs/faq/security/set-webserver-secret-key.md
+# ###############################################################################
+  {{ required "For Airflow <3.0, use `airflow.webserverSecretKey` instead of `airflow.apiSecretKey`!" nil }}
+  {{- end }}
+
+  {{/* Validate ingress.web is used instead of ingress.apiServer */}}
+  {{- if and .Values.ingress.enabled (or .Values.ingress.apiServer.host .Values.ingress.apiServer.path (ne (.Values.ingress.apiServer.annotations | toString) "map[]")) }}
+# ###############################################################################
+# ERROR: Airflow <3.0 requires `ingress.web` instead of `ingress.apiServer`
+# ###############################################################################
+#     Airflow 2.x and earlier use the Webserver component.
+#     You must configure ingress routing to the Webserver, not the API Server.
+#
+#     Current Airflow version: {{ include "airflow.version" . }}
+#     Current configuration:
+#       ingress.apiServer.host: {{ .Values.ingress.apiServer.host | default "NOT SET" }}
+#       ingress.apiServer.path: {{ .Values.ingress.apiServer.path | default "NOT SET" }}
+#
+#     REQUIRED CHANGES:
+#     1. Move your ingress.apiServer configuration to ingress.web:
+#        ingress:
+#          web:
+#            host: "<your-ingress.apiServer.host>"
+#            path: "<your-ingress.apiServer.path>"
+#            annotations: <your-ingress.apiServer.annotations>
+#            # ... other configs
+#          apiServer:
+#            host: ""       # Clear apiServer configuration
+#            path: ""
+#            annotations: {}
+#
+#     2. Update AIRFLOW__WEBSERVER__BASE_URL if using custom paths:
+#        airflow:
+#          config:
+#            AIRFLOW__WEBSERVER__BASE_URL: "http://{HOSTNAME}<path>"
+#
+#     OR upgrade to Airflow 3.0+ to use the API Server component.
+# ###############################################################################
+  {{ required "For Airflow <3.0, use `ingress.web` instead of `ingress.apiServer`!" nil }}
   {{- end }}
 {{- end }}

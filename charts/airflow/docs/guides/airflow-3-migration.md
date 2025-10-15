@@ -78,7 +78,6 @@ airflow:
 
   # REQUIRED: Set JWT secret for internal API authentication
   jwtSecret: "your-generated-jwt-secret-here"
-  jwtSecretKey: jwt-secret
 
   # Optional: Configure API-specific settings
   config:
@@ -189,22 +188,52 @@ kubectl logs -l component=dag_processor -n airflow --tail=50
 
 ## Configuration Changes
 
+### Automatic Configuration Validations
+
+The chart includes automatic validations to prevent version-specific configuration errors:
+
+#### Airflow 3.0+ Validations
+
+When deploying Airflow 3.0+, the chart validates that you use the correct components:
+
+1. **API Server vs Webserver**: You must use `apiServer.*` configuration instead of `web.*`
+   - ❌ **Invalid**: `web.replicas: 2`
+   - ✅ **Valid**: `apiServer.replicas: 2` and `web.replicas: 0` (or unset)
+
+2. **API Secret Key**: You must use `airflow.apiSecretKey` instead of `airflow.webserverSecretKey`
+   - ❌ **Invalid**: Setting `airflow.webserverSecretKey` to a custom value
+   - ✅ **Valid**: `airflow.apiSecretKey: "your-secret-key"`
+
+3. **Ingress Configuration**: You must use `ingress.apiServer.*` instead of `ingress.web.*`
+   - ❌ **Invalid**: `ingress.web.host: "airflow.example.com"`
+   - ✅ **Valid**: `ingress.apiServer.host: "airflow.example.com"`
+
+#### Airflow 2.x Validations
+
+When deploying Airflow 2.x, the chart validates the opposite:
+
+1. **Webserver vs API Server**: You must use `web.*` configuration instead of `apiServer.*`
+   - ❌ **Invalid**: `apiServer.replicas: 2`
+   - ✅ **Valid**: `web.replicas: 2` and `apiServer.replicas: 0` (default)
+
+2. **Webserver Secret Key**: You must use `airflow.webserverSecretKey` instead of `airflow.apiSecretKey`
+   - ❌ **Invalid**: Setting `airflow.apiSecretKey`
+   - ✅ **Valid**: `airflow.webserverSecretKey: "your-secret-key"`
+
+3. **Ingress Configuration**: You must use `ingress.web.*` instead of `ingress.apiServer.*`
+   - ❌ **Invalid**: `ingress.apiServer.host: "airflow.example.com"`
+   - ✅ **Valid**: `ingress.web.host: "airflow.example.com"`
+
+These validations help ensure smooth deployments and prevent common misconfiguration errors during migration.
+
 ### JWT Secret via External Secret (Recommended)
 
 Instead of storing the JWT secret directly in `values.yaml`, reference it from a Kubernetes Secret:
 
 ```yaml
 airflow:
-  # Leave jwtSecret empty
-  jwtSecret: ""
-
-  # Reference the secret via extraEnv
-  extraEnv:
-    - name: AIRFLOW__API_AUTH__JWT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: airflow-secrets
-          key: jwt-secret
+  jwtSecretName: airflow-jwt-secret 
+  jwtSecretKey: jwt-secret
 ```
 
 Create the Kubernetes Secret:
@@ -223,11 +252,14 @@ Update your ingress to point to the API Server service instead of the Webserver:
 ingress:
   enabled: true
   apiServer:
-    enabled: true
     # The chart automatically routes to api-server service for Airflow 3.0+
     host: "airflow.example.com"
     path: "/"
+    annotations: {}
+    ingressClassName: ""
 ```
+
+**Migration Note**: If you have existing `ingress.web.*` configuration in your values.yaml, you must move it to `ingress.apiServer.*`. The chart will fail validation if both are configured or if `ingress.web.*` is configured for Airflow 3.0+.
 
 ### Monitoring and Metrics
 
@@ -249,6 +281,43 @@ prometheusRule:
           for: 5m
 ```
 
+### Authentication (REQUIRED for Airflow 3.1.0+)
+
+> 🟧 **Important** 🟧
+>
+> Airflow 3.1.0+ changed the default authentication from FAB to Simple Authentication.
+> For production deployments, you **MUST** explicitly configure authentication.
+
+Airflow 3.0 used FAB (Flask AppBuilder) as the default auth manager. Airflow 3.1.0+ changed the default to Simple Authentication. To continue using FAB (recommended for most deployments with user management and RBAC):
+
+```yaml
+airflow:
+  image:
+    tag: 3.1.0
+
+  config:
+    ## Use FAB Auth Manager (required for most production deployments)
+    AIRFLOW__CORE__AUTH_MANAGER: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
+
+    ## Configure API authentication backends for FAB
+    AIRFLOW__API__AUTH_BACKENDS: "airflow.providers.fab.auth_manager.api.auth.backend.jwt,airflow.providers.fab.auth_manager.api.auth.backend.session,airflow.providers.fab.auth_manager.api.auth.backend.basic_auth"
+
+    ## Ensure FAB permissions are updated on startup (avoids None perms on fresh installs)
+    AIRFLOW__FAB__UPDATE_FAB_PERMS: "True"
+```
+
+**For Simple Authentication (not recommended for production):**
+```yaml
+airflow:
+  image:
+    tag: 3.1.0
+
+  config:
+    AIRFLOW__CORE__AUTH_MANAGER: "airflow.auth.managers.simple.simple_auth_manager.SimpleAuthManager"
+```
+
+See: [Airflow Auth Manager Documentation](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/auth-manager/)
+
 ---
 
 ## Troubleshooting
@@ -258,7 +327,7 @@ prometheusRule:
 **Symptom**: Errors like `"Invalid JWT token"` or `"JWT signature verification failed"`
 
 **Solution**:
-- Ensure `jwtSecret` is identical across all components
+- Ensure `jwt-secret` is identical across all components
 - Check that the secret is properly mounted as an environment variable
 - Verify JWT expiration settings are appropriate
 

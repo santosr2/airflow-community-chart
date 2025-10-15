@@ -1,4 +1,4 @@
-{{- if and .Values.web.podDisruptionBudget.enabled (semverCompare "<3.0.0" (include "airflow.image.version" .)) }}
+{{- if and .Values.web.podDisruptionBudget.enabled (semverCompare "<3.0.0" (include "airflow.version" .)) }}
 apiVersion: {{ .Values.web.podDisruptionBudget.apiVersion }}
 kind: PodDisruptionBudget
 metadata:

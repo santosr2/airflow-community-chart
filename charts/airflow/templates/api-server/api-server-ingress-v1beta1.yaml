@@ -1,4 +1,4 @@
-{{- if and (.Values.ingress.enabled) (eq .Values.ingress.apiVersion "networking.k8s.io/v1beta1") (semverCompare ">=3.0.0" (include "airflow.image.version" .)) }}
+{{- if and (.Values.ingress.enabled) (eq .Values.ingress.apiVersion "networking.k8s.io/v1beta1") (semverCompare ">=3.0.0" (include "airflow.version" .)) }}
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:

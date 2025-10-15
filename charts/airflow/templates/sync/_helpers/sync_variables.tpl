@@ -14,7 +14,7 @@ The python sync script for variables.
 ## Imports ##
 #############
 from airflow.models import Variable
-{{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
+{{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
 from airflow.utils.session import create_session
 {{- else }}
 from airflow.utils.db import create_session

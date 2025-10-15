@@ -154,7 +154,7 @@ spec:
                   except ImportError:
                       # `BaseJob` was renamed to `Job` in airflow 2.6.0
                       from airflow.jobs.base_job import BaseJob as Job
-                  {{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
+                  {{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
                   from airflow.utils.session import create_session
                   {{- else }}
                   from airflow.utils.db import create_session

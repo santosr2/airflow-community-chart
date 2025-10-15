@@ -8,7 +8,7 @@
 {{- $volumeMounts := include "airflow.volumeMounts" (dict "Release" .Release "Values" .Values "extraPipPackages" $extraPipPackages "extraVolumeMounts" $extraVolumeMounts) }}
 {{- $extraVolumes := .Values.dagProcessor.extraVolumes }}
 {{- $volumes := include "airflow.volumes" (dict "Release" .Release "Values" .Values "extraPipPackages" $extraPipPackages "extraVolumes" $extraVolumes "extraVolumeMounts" $extraVolumeMounts) }}
-{{- if semverCompare ">=3.0.0" (include "airflow.image.version" .) }}
+{{- if and (semverCompare ">=2.3.0" (include "airflow.version" .)) .Values.dagProcessor.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -124,20 +124,6 @@ spec:
             - "bash"
             - "-c"
             - "exec airflow dag-processor"
-          {{- if .Values.dagProcessor.readinessProbe.enabled }}
-          readinessProbe:
-            initialDelaySeconds: {{ .Values.dagProcessor.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.dagProcessor.readinessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.dagProcessor.readinessProbe.timeoutSeconds }}
-            failureThreshold: {{ .Values.dagProcessor.readinessProbe.failureThreshold }}
-            exec:
-              command:
-                - sh
-                - -c
-                - |
-                  CONNECTION_CHECK_MAX_COUNT=0 AIRFLOW__LOGGING__LOGGING_LEVEL=ERROR exec /entrypoint \
-                  airflow jobs check --local --job-type DagProcessorJob
-          {{- end }}
           {{- if .Values.dagProcessor.livenessProbe.enabled }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.dagProcessor.livenessProbe.initialDelaySeconds }}

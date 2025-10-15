@@ -1,4 +1,4 @@
-{{- if and (.Values.dagProcessor.podDisruptionBudget.enabled) (semverCompare ">=3.0.0" (include "airflow.image.version" .)) }}
+{{- if and .Values.dagProcessor.enabled .Values.dagProcessor.podDisruptionBudget.enabled (semverCompare ">=2.3.0" (include "airflow.version" .)) }}
 apiVersion: {{ .Values.dagProcessor.podDisruptionBudget.apiVersion }}
 kind: PodDisruptionBudget
 metadata:
