@@ -62,8 +62,8 @@
 {{- end }}
 
 {{- if semverCompare ">= 3.0.0" (include "airflow.version" .) -}}
-  {{- if .Values.airflow.executor -}}
-    {{ fail "The `airflow.executor` setting is deprecated in Airflow 3.0+. Use `airflow.executors` instead!" }}
+  {{- if and .Values.airflow.executor (ne .Values.airflow.executor "CeleryExecutor") -}}
+    {{ required "The `airflow.executor` setting is deprecated in Airflow 3.0+. Use `airflow.executors` instead!" nil }}
   {{- end -}}
   {{- if not .Values.airflow.executors -}}
     {{ required "In Airflow 3.0+, you must set at least one executor in the `airflow.executors` list!" nil }}
@@ -90,7 +90,7 @@
 
 {{/* Checks for `airflow.config` */}}
 {{- if .Values.airflow.config.AIRFLOW__CORE__EXECUTOR }}
-  {{ required "Don't define `airflow.config.AIRFLOW__CORE__EXECUTOR`, it will be automatically set from `airflow.executor`!" nil }}
+  {{ required "Don't define `airflow.config.AIRFLOW__CORE__EXECUTOR`, it will be automatically set from `airflow.executor` or `airflow.executors`!" nil }}
 {{- end }}
 {{- if or .Values.airflow.config.AIRFLOW__CORE__DAGS_FOLDER }}
   {{ required "Don't define `airflow.config.AIRFLOW__CORE__DAGS_FOLDER`, it will be automatically set from `dags.path`!" nil }}
@@ -384,7 +384,7 @@
   {{- end }}
 
   {{/* DAG Processor must have at least 1 replica */}}
-  {{- if lt (int .Values.dagProcessor.replicas) 1 }}
+  {{- if or (not .Values.dagProcessor.enabled) (lt (int .Values.dagProcessor.replicas) 1) }}
 # ###############################################################################
 # ERROR: Airflow 3.0+ requires at least 1 DAG Processor replica
 # ###############################################################################
@@ -394,7 +394,7 @@
 #     Current dagProcessor.replicas: {{ .Values.dagProcessor.replicas }}
 #     Recommended: dagProcessor.replicas >= 1
 # ###############################################################################
-  {{ required "dagProcessor.replicas must be >= 1 for Airflow 3.0+" nil }}
+  {{ required "dagProcessor.replicas must be >= 1 and enabled for Airflow 3.0+" nil }}
   {{- end }}
 
   {{/* Validate apiServer component is configured instead of web */}}

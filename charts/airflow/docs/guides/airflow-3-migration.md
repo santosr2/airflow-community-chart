@@ -50,7 +50,7 @@ Before migrating, ensure you have:
 1. **Backup your database**: Always backup your Airflow metadata database before upgrading
 2. **Review breaking changes**: Check the [official Airflow 3.0 release notes](https://airflow.apache.org/docs/apache-airflow/stable/release_notes.html)
 3. **Test in non-production**: Perform the migration in a test environment first
-4. **Chart version**: Ensure you're using chart version `9.0.0` or later
+4. **Chart version**: Ensure you're using chart version `8.10.0` or later
 
 ---
 
@@ -153,7 +153,7 @@ Upgrade your Helm release:
 
 ```bash
 helm upgrade airflow airflow-helm/airflow \
-  --version 9.0.0 \
+  --version 8.10.0 \
   -f values.yaml \
   --namespace airflow
 ```

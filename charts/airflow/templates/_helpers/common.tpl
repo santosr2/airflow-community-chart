@@ -45,8 +45,14 @@ Construct the name of the airflow ServiceAccount.
 A flag indicating if a celery-like executor is selected (empty if false)
 */}}
 {{- define "airflow.executor.celery_like" -}}
-{{- if or (eq .Values.airflow.executor "CeleryExecutor") (eq .Values.airflow.executor "CeleryKubernetesExecutor") (has "CeleryExecutor" .Values.airflow.executors) -}}
+{{- if semverCompare "< 3.0.0" (include "airflow.version" .) -}}
+{{- if or (eq .Values.airflow.executor "CeleryExecutor") (eq .Values.airflow.executor "CeleryKubernetesExecutor") -}}
 true
+{{- end -}}
+{{- else -}}
+{{- if has "CeleryExecutor" .Values.airflow.executors -}}
+true
+{{- end -}}
 {{- end -}}
 {{- end -}}
 
@@ -54,8 +60,14 @@ true
 A flag indicating if a kubernetes-like executor is selected (empty if false)
 */}}
 {{- define "airflow.executor.kubernetes_like" -}}
-{{- if or (eq .Values.airflow.executor "KubernetesExecutor") (eq .Values.airflow.executor "CeleryKubernetesExecutor") (has "KubernetesExecutor" .Values.airflow.executors) -}}
+{{- if semverCompare "< 3.0.0" (include "airflow.version" .) -}}
+{{- if or (eq .Values.airflow.executor "KubernetesExecutor") (eq .Values.airflow.executor "CeleryKubernetesExecutor") -}}
 true
+{{- end -}}
+{{- else -}}
+{{- if has "KubernetesExecutor" .Values.airflow.executors -}}
+true
+{{- end -}}
 {{- end -}}
 {{- end -}}
 

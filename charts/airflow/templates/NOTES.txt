@@ -53,7 +53,7 @@
 {{- else }}
   {{- $web_secret_envvars = list "AIRFLOW__API__SECRET_KEY" "AIRFLOW__API__SECRET_KEY_CMD" "AIRFLOW__API__SECRET_KEY_SECRET" }}
 {{- end }}
-{{- if and (ne .Values.airflow.webserverSecretKey "THIS IS UNSAFE!") (ne .Values.airflow.apiSecretKey "")  }}
+{{- if and (ne .Values.airflow.webserverSecretKey "THIS IS UNSAFE!") (ne .Values.airflow.apiSecretKey "") (ne .Values.airflow.apiSecretKeyName "")  }}
 {{- $web_secret_warning = false }}
 {{- end }}
 {{- range $key, $val := .Values.airflow.config }}
@@ -243,10 +243,10 @@ Use these commands to port-forward the Services to your localhost:
 
 {{- if $web_secret_warning }}
 {{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
-  [CRITICAL] default API secret_key value!
+[CRITICAL] default API secret_key value!
   * HELP: set a custom value with `airflow.apiSecretKey` or `AIRFLOW__API__SECRET_KEY`
 {{- else }}
-  [CRITICAL] default webserver secret_key value!
+[CRITICAL] default webserver secret_key value!
   * HELP: set a custom value with `airflow.webserverSecretKey` or `AIRFLOW__WEBSERVER__SECRET_KEY`
 {{- end }}
 {{ end }}

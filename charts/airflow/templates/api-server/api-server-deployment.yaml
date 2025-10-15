@@ -124,8 +124,6 @@ spec:
             - "bash"
             - "-c"
             - |
-              {{- /* TODO: maybe it should be a separated sync step? */}}
-              airflow sync-perm || true
               exec airflow api-server
           {{- if .Values.apiServer.livenessProbe.enabled }}
           livenessProbe:
