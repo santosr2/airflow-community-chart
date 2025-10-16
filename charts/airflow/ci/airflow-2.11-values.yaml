@@ -1,0 +1,11 @@
+## this values file tests Airflow 2.11.0 with standalone DAG Processor
+## - DAG Processor (separate from Scheduler)
+##
+airflow:
+  image:
+    repository: apache/airflow
+    tag: "2.11.0-python3.10"
+
+## DAG Processor configuration (Airflow 2.3+ component)
+dagProcessor:
+  enabled: true
