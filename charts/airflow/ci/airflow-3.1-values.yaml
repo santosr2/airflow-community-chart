@@ -17,6 +17,6 @@ apiServer:
   ## minimal replicas for CI
   replicas: 1
 
-## DAG Processor configuration (Airflow 3.0+ component)
+## DAG Processor configuration (Airflow 2.3+ component)
 dagProcessor:
   enabled: true
