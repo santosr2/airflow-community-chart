@@ -161,6 +161,8 @@ spec:
                           .first()
                       if (triggerer_job is not None) and triggerer_job.is_alive():
                           pass
+                      elif triggerer_job is None:
+                          sys.exit(f"No TriggererJob found for hostname '{hostname}'")
                       else:
                           sys.exit(f"The TriggererJob (id={triggerer_job.id}) for hostname '{hostname}' is not alive")
           {{- end }}
