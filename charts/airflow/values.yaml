@@ -1269,37 +1269,6 @@ dagProcessor:
   ##
   enabled: false
 
-  ########################################
-  ## FILE | webserver_config.py
-  ########################################
-  ##
-  webserverConfig:
-    ## if the `webserver_config.py` file is mounted
-    ## - set to false if you wish to mount your own `webserver_config.py` file
-    ##
-    enabled: false
-
-    ## the full content of the `webserver_config.py` file (as a string)
-    ## - docs for Flask-AppBuilder security configs:
-    ##   https://flask-appbuilder.readthedocs.io/en/latest/security.html
-    ##
-    ## ____ EXAMPLE _______________
-    ##   stringOverride: |
-    ##     from airflow import configuration as conf
-    ##     from flask_appbuilder.security.manager import AUTH_DB
-    ##
-    ##     # the SQLAlchemy connection string
-    ##     SQLALCHEMY_DATABASE_URI = conf.get('core', 'SQL_ALCHEMY_CONN')
-    ##
-    ##     # use embedded DB for auth
-    ##     AUTH_TYPE = AUTH_DB
-    ##
-    stringOverride: ""
-
-    ## the name of a Secret containing a `webserver_config.py` key
-    ##
-    existingSecret: ""
-
   ## the number of dagProcessor Pods to run
   ## - if you set this >1 we recommend defining a `web.podDisruptionBudget`
   ##
@@ -2748,7 +2717,7 @@ externalDatabase:
 ###################################
 redis:
   ## if the `stable/redis` chart is used
-  ## - set to `false` if `airflow.executor` is `KubernetesExecutor`
+  ## - set to `false` if `airflow.executor` or `airflow.executors` is `KubernetesExecutor`
   ## - set to `false` if using `externalRedis.*`
   ##
   enabled: true

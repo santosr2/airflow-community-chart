@@ -145,6 +145,12 @@ spec:
                         else:
                             return output.decode(encoding="utf-8")
 
+                    if os.environ["AIRFLOW__CELERY__WORKER_ENABLE_REMOTE_CONTROL"] != "True":
+                        # celery inspect can not see the worker running with remote control disabled
+                        # https://github.com/airflow-helm/charts/pull/766#issuecomment-1792009724
+                        print("AIRFLOW__CELERY__WORKER_ENABLE_REMOTE_CONTROL is not set to 'True', skipping graceful termination")
+                        exit(0)
+
                     broker_url = run_command(["bash", "-c", "eval $AIRFLOW__CELERY__BROKER_URL_CMD"])
                     local_celery_host = f"celery@{os.environ['HOSTNAME']}"
                     app = Celery(broker=broker_url)
