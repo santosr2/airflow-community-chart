@@ -38,8 +38,8 @@
 
 {{/* Checks for `airflow.executor` */}}
 {{- if semverCompare "< 3.0.0" (include "airflow.version" .) -}}
-  {{- if .Values.airflow.executors -}}
-    {{ fail "The `airflow.executors` list is only supported in Airflow 3.0+. Use `airflow.executor` instead!" }}
+  {{- if and .Values.airflow.executors (semverCompare "< 2.10.0" (include "airflow.version" .)) -}}
+    {{ fail "The `airflow.executors` list is only supported in Airflow 2.10+. Use `airflow.executor` instead!" }}
   {{- end -}}
   {{- if not (has .Values.airflow.executor (list "CeleryExecutor" "CeleryKubernetesExecutor" "KubernetesExecutor")) }}
     {{ required "The `airflow.executor` must be one of: [CeleryExecutor, CeleryKubernetesExecutor, KubernetesExecutor]!" nil }}
