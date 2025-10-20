@@ -1,11 +1,11 @@
-{{- if and .Values.prometheusRule.enabled (semverCompare "<3.0.0" (include "airflow.version" .)) }}
+{{- if and (.Values.prometheusRule.enabled) (semverCompare ">=3.0.0" (include "airflow.version" .)) }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: {{ include "airflow.fullname" . }}
   labels:
     app: {{ include "airflow.labels.app" . }}
-    component: web
+    component: api-server
     chart: {{ include "airflow.labels.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}

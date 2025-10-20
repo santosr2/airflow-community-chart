@@ -8,14 +8,12 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 
 {{/*
 The version of airflow being deployed.
-- extracted from the image tag (only for images in airflow's official DockerHub repo)
+- extracted from the image tag
 - always in `XX.XX.XX` format (ignores any pre-release suffixes)
 - empty if no version can be extracted
 */}}
-{{- define "airflow.image.version" -}}
-{{- if eq .Values.airflow.image.repository "apache/airflow" -}}
-{{- regexFind `^[0-9]+\.[0-9]+\.[0-9]+` .Values.airflow.image.tag -}}
-{{- end -}}
+{{- define "airflow.version" -}}
+{{- regexFind `^[0-9]+\.[0-9]+\.[0-9]+` (.Values.airflow.image.tag | toString) -}}
 {{- end -}}
 
 {{/*
@@ -47,8 +45,14 @@ Construct the name of the airflow ServiceAccount.
 A flag indicating if a celery-like executor is selected (empty if false)
 */}}
 {{- define "airflow.executor.celery_like" -}}
+{{- if semverCompare "< 3.0.0" (include "airflow.version" .) -}}
 {{- if or (eq .Values.airflow.executor "CeleryExecutor") (eq .Values.airflow.executor "CeleryKubernetesExecutor") -}}
 true
+{{- end -}}
+{{- else -}}
+{{- if has "CeleryExecutor" .Values.airflow.executors -}}
+true
+{{- end -}}
 {{- end -}}
 {{- end -}}
 
@@ -56,8 +60,14 @@ true
 A flag indicating if a kubernetes-like executor is selected (empty if false)
 */}}
 {{- define "airflow.executor.kubernetes_like" -}}
+{{- if semverCompare "< 3.0.0" (include "airflow.version" .) -}}
 {{- if or (eq .Values.airflow.executor "KubernetesExecutor") (eq .Values.airflow.executor "CeleryKubernetesExecutor") -}}
 true
+{{- end -}}
+{{- else -}}
+{{- if has "KubernetesExecutor" .Values.airflow.executors -}}
+true
+{{- end -}}
 {{- end -}}
 {{- end -}}
 
@@ -79,6 +89,30 @@ NOTE: this sets the `appProtocol` of the Service port (only important for Istio 
 */}}
 {{- define "airflow.web.appProtocol" -}}
 {{- if and (.Values.airflow.config.AIRFLOW__WEBSERVER__WEB_SERVER_SSL_CERT) (.Values.airflow.config.AIRFLOW__WEBSERVER__WEB_SERVER_SSL_KEY) -}}
+https
+{{- else -}}
+http
+{{- end -}}
+{{- end -}}
+
+{{/*
+The scheme (HTTP, HTTPS) used by the API server.
+NOTE: this is used in the liveness/readiness probes of the API server
+*/}}
+{{- define "airflow.apiServer.scheme" -}}
+{{- if and (.Values.airflow.config.AIRFLOW__API__SSL_CERT) (.Values.airflow.config.AIRFLOW__API__SSL_KEY) -}}
+HTTPS
+{{- else -}}
+HTTP
+{{- end -}}
+{{- end -}}
+
+{{/*
+The app protocol used by the API server.
+NOTE: this sets the `appProtocol` of the Service port (only important for Istio users)
+*/}}
+{{- define "airflow.apiServer.appProtocol" -}}
+{{- if and (.Values.airflow.config.AIRFLOW__API__SSL_CERT) (.Values.airflow.config.AIRFLOW__API__SSL_KEY) -}}
 https
 {{- else -}}
 http
@@ -142,8 +176,8 @@ If the airflow triggerer should be used.
 {{- define "airflow.triggerer.should_use" -}}
 {{- if .Values.triggerer.enabled -}}
 {{- if not .Values.airflow.legacyCommands -}}
-{{- if include "airflow.image.version" . -}}
-{{- if semverCompare ">=2.2.0" (include "airflow.image.version" .) -}}
+{{- if include "airflow.version" . -}}
+{{- if semverCompare ">=2.2.0" (include "airflow.version" .) -}}
 true
 {{- end -}}
 {{- else -}}

@@ -1,0 +1,24 @@
+{{- if and (.Values.apiServer.podDisruptionBudget.enabled) (semverCompare ">=3.0.0" (include "airflow.version" .)) }}
+apiVersion: {{ .Values.apiServer.podDisruptionBudget.apiVersion }}
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "airflow.fullname" . }}-api-server
+  labels:
+    app: {{ include "airflow.labels.app" . }}
+    component: api-server
+    chart: {{ include "airflow.labels.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  {{- if .Values.apiServer.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.apiServer.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  {{- if .Values.apiServer.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.apiServer.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ include "airflow.labels.app" . }}
+      component: api-server
+      release: {{ .Release.Name }}
+{{- end }}

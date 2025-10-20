@@ -55,7 +55,7 @@ Originally created in 2017, it has since helped thousands of companies create pr
 
 ## Key Features
 
-- __Support for Airflow Versions:__ 
+- __Support for Airflow Versions:__
    - [`1.10` | `2.0` | `2.1` | `2.2` | `2.3` | `2.4` | `2.5` | `2.6` | `2.7` | `2.8` | `2.9` | `2.10`](#airflow-version-support)
 - __Support for Airflow Executors:__ 
    - [`CeleryExecutor` | `KubernetesExecutor` | `CeleryKubernetesExecutor`](#airflow-executor-support)

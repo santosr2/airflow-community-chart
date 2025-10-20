@@ -14,7 +14,10 @@ The `airflow.config` value makes this easier, each key-value is mounted as an en
 airflow:
   config:
     ## security
+    # For Airflow v2
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "False"
+    # For Airflow v3
+    AIRFLOW__API__EXPOSE_CONFIG: "False"
     
     ## dags
     AIRFLOW__CORE__LOAD_EXAMPLES: "False"
@@ -29,7 +32,10 @@ airflow:
     AIRFLOW__SMTP__SMTP_STARTTLS: "False"
     
     ## domain used in airflow emails
+    # For Airflow v2
     AIRFLOW__WEBSERVER__BASE_URL: "http://airflow.example.com"
+    # For Airflow v3
+    AIRFLOW__API__BASE_URL: "http://airflow.example.com"
     
     ## ether environment variables
     HTTP_PROXY: "http://proxy.example.com:8080"

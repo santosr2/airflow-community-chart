@@ -1,0 +1,45 @@
+{{- if and .Values.dagProcessor.enabled (semverCompare ">=2.3.0" (include "airflow.version" .)) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "airflow.fullname" . }}-dag-processor
+  {{- if .Values.dagProcessor.service.annotations }}
+  annotations:
+    {{- toYaml .Values.dagProcessor.service.annotations | nindent 4 }}
+  {{- end }}
+  labels:
+    app: {{ include "airflow.labels.app" . }}
+    component: dag-processor
+    chart: {{ include "airflow.labels.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.dagProcessor.service.type }}
+  selector:
+    app: {{ include "airflow.labels.app" . }}
+    component: dag_processor
+    release: {{ .Release.Name }}
+  sessionAffinity: {{ .Values.dagProcessor.service.sessionAffinity }}
+  {{- if .Values.dagProcessor.service.sessionAffinityConfig }}
+  sessionAffinityConfig:
+    {{- toYaml .Values.dagProcessor.service.sessionAffinityConfig | nindent 4 }}
+  {{- end }}
+  ports:
+    - name: dag-processor
+      appProtocol: {{ include "airflow.apiServer.appProtocol" . | quote }}
+      protocol: TCP
+      port: {{ .Values.dagProcessor.service.externalPort | default 8080 }}
+      {{- if and (eq .Values.dagProcessor.service.type "NodePort") (.Values.dagProcessor.service.nodePort.http) }}
+      nodePort: {{ .Values.dagProcessor.service.nodePort.http }}
+      {{- end }}
+      targetPort: 8080
+  {{- if eq .Values.dagProcessor.service.type "LoadBalancer" }}
+  {{- if .Values.dagProcessor.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.dagProcessor.service.loadBalancerIP | quote }}
+  {{- end }}
+  {{- if .Values.dagProcessor.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- toYaml .Values.dagProcessor.service.loadBalancerSourceRanges | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

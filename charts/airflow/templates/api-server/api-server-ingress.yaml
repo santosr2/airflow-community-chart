@@ -1,38 +1,38 @@
-{{- if and (.Values.ingress.enabled) (eq .Values.ingress.apiVersion "networking.k8s.io/v1") (semverCompare "<3.0.0" (include "airflow.version" .)) }}
+{{- if and (.Values.ingress.enabled) (eq .Values.ingress.apiVersion "networking.k8s.io/v1") (semverCompare ">=3.0.0" (include "airflow.version" .)) }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "airflow.fullname" . }}-web
-  {{- if .Values.ingress.web.annotations }}
+  name: {{ include "airflow.fullname" . }}-api-server
+  {{- if .Values.ingress.apiServer.annotations }}
   annotations:
-    {{- toYaml .Values.ingress.web.annotations | nindent 4 }}
+    {{- toYaml .Values.ingress.apiServer.annotations | nindent 4 }}
   {{- end }}
   labels:
     app: {{ include "airflow.labels.app" . }}
-    component: web
+    component: api-server
     chart: {{ include "airflow.labels.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-    {{- if .Values.ingress.web.labels }}
-    {{- toYaml .Values.ingress.web.labels | nindent 4 }}
+    {{- if .Values.ingress.apiServer.labels }}
+    {{- toYaml .Values.ingress.apiServer.labels | nindent 4 }}
     {{- end }}
 spec:
-  {{- if .Values.ingress.web.tls.enabled }}
+  {{- if .Values.ingress.apiServer.tls.enabled }}
   tls:
     - hosts:
-        - {{ .Values.ingress.web.host }}
-      {{- if .Values.ingress.web.tls.secretName }}
-      secretName: {{ .Values.ingress.web.tls.secretName }}
+        - {{ .Values.ingress.apiServer.host }}
+      {{- if .Values.ingress.apiServer.tls.secretName }}
+      secretName: {{ .Values.ingress.apiServer.tls.secretName }}
       {{- end }}
   {{- end }}
-  {{- if .Values.ingress.web.ingressClassName }}
-  ingressClassName: {{ .Values.ingress.web.ingressClassName }}
+  {{- if .Values.ingress.apiServer.ingressClassName }}
+  ingressClassName: {{ .Values.ingress.apiServer.ingressClassName }}
   {{- end }}
   rules:
-    - host: {{ .Values.ingress.web.host }}
+    - host: {{ .Values.ingress.apiServer.host }}
       http:
         paths:
-          {{- range .Values.ingress.web.precedingPaths }}
+          {{- range .Values.ingress.apiServer.precedingPaths }}
           - path: {{ .path }}
             pathType: ImplementationSpecific
             backend:
@@ -45,14 +45,14 @@ spec:
                   number: {{ .servicePort }}
                   {{- end }}
           {{- end }}
-          - path: {{ .Values.ingress.web.path }}
+          - path: {{ .Values.ingress.apiServer.path }}
             pathType: ImplementationSpecific
             backend:
               service:
-                name: {{ include "airflow.fullname" . }}-web
+                name: {{ include "airflow.fullname" . }}-api-server
                 port:
-                  name: web
-          {{- range .Values.ingress.web.succeedingPaths }}
+                  name: api-server
+          {{- range .Values.ingress.apiServer.succeedingPaths }}
           - path: {{ .path }}
             pathType: ImplementationSpecific
             backend:

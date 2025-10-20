@@ -10,31 +10,174 @@ airflow:
   ##
   image:
     repository: apache/airflow
-    tag: 2.8.4-python3.9
+    ## Airflow version (Used to make version-specific decisions in chart templates)
+    ## - This value determines which components are deployed:
+    ##   * Airflow < 3.0: Deploys Webserver
+    ##   * Airflow >= 3.0: Deploys API Server + DAG Processor (Webserver is replaced)
+    ## - For Airflow 3.0+, you must also set `jwtSecret` (see below)
+    ## - Supported versions: 1.10.x, 2.x, 3.0.x, 3.1.x
+    ##
+    tag: "2.8.4-python3.9"
     pullPolicy: IfNotPresent
     pullSecret: ""
     uid: 50000
     gid: 0
 
-  ## the airflow executor type to use
+  ## the airflow executor type to use (Airflow < 3.0)
   ## - allowed values: "CeleryExecutor", "KubernetesExecutor", "CeleryKubernetesExecutor"
   ## - customize the "KubernetesExecutor" pod-template with `airflow.kubernetesPodTemplate.*`
+  ## - NOTE: For Airflow 3.0+, use `executors` (list) instead
   ##
   executor: CeleryExecutor
 
+  ## Airflow v2.10.0+ supports multiple executors, defined as a list (STABLE in 3.0+)
+  ## - In Airflow 3.0+, this field is REQUIRED and `executor` (singular) is deprecated
+  ## - CeleryKubernetesExecutor is DEPRECATED in Airflow 3.0+
+  ##   Replace with: executors: ["CeleryExecutor", "KubernetesExecutor"]
+  ## - allowed values: "CeleryExecutor", "KubernetesExecutor"
+  ## - customize the "KubernetesExecutor" pod-template with `airflow.kubernetesPodTemplate.*`
+  ## - Note: the first executor in the list is the "primary" executor (the default executor)
+  ## - See: https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/executor/
+  ##
+  executors: []
+
+  ########################################
+  ## Fernet Encryption Key
+  ## >>> CRITICAL SECURITY SETTING <<<
+  ########################################
   ## the fernet encryption key (sets `AIRFLOW__CORE__FERNET_KEY`)
-  ## - [WARNING] you must change this value to ensure the security of your airflow
-  ## - set `AIRFLOW__CORE__FERNET_KEY` with `airflow.extraEnv` from a Secret to avoid storing this in your values
-  ## - use this command to generate your own fernet key:
-  ##   python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"
+  ## - Used to encrypt/decrypt Airflow connections, variables, and sensitive data
+  ## - [CRITICAL] The default value below is PUBLICLY KNOWN and MUST be changed for ANY deployment
+  ## - [DANGER] Using the default allows ANYONE to decrypt your sensitive data
+  ## - [PRODUCTION] For production, use external secret manager (AWS Secrets Manager, Vault, etc.)
+  ##
+  ## Generate a new fernet key:
+  ##   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+  ##
+  ## Alternative: Set via environment variable from external secret:
+  ##   airflow:
+  ##     extraEnv:
+  ##       - name: AIRFLOW__CORE__FERNET_KEY
+  ##         valueFrom:
+  ##           secretKeyRef:
+  ##             name: airflow-secrets
+  ##             key: fernet-key
+  ##
+  ## Documentation: charts/airflow/docs/faq/security/set-fernet-key.md
   ##
   fernetKey: "7T512UXSSmBOkpWimFHIVb8jK6lfmSAvx4mO6Arehnc="
 
-  ## the secret_key for flask (sets `AIRFLOW__WEBSERVER__SECRET_KEY`)
-  ## - [WARNING] you must change this value to ensure the security of your airflow
-  ## - set `AIRFLOW__WEBSERVER__SECRET_KEY` with `airflow.extraEnv` from a Secret to avoid storing this in your values
+  ########################################
+  ## Webserver Secret Key
+  ## >>> CRITICAL SECURITY SETTING <<<
+  ########################################
+  ## the secret_key for flask (sets `AIRFLOW__WEBSERVER__SECRET_KEY`) used by Airflow < 3.0
+  ## - Used for Flask session signing and CSRF protection
+  ## - [CRITICAL] The default value below is PUBLICLY KNOWN and MUST be changed for ANY deployment
+  ## - [DANGER] Using the default enables session hijacking and unauthorized access
+  ## - [PRODUCTION] For production, use external secret manager (AWS Secrets Manager, Vault, etc.)
+  ##
+  ## Generate a new secret key:
+  ##   python -c "import secrets; print(secrets.token_urlsafe(32))"
+  ##
+  ## Alternative: Set via environment variable from external secret:
+  ##   airflow:
+  ##     extraEnv:
+  ##       - name: AIRFLOW__WEBSERVER__SECRET_KEY
+  ##         valueFrom:
+  ##           secretKeyRef:
+  ##             name: airflow-secrets
+  ##             key: webserver-secret-key
+  ##
+  ## Documentation: charts/airflow/docs/faq/security/set-webserver-secret-key.md
   ##
   webserverSecretKey: "THIS IS UNSAFE!"
+
+  ########################################
+  ## API Secret Key
+  ## >>> CRITICAL SECURITY SETTING <<<
+  ########################################
+  ## the secret_key for API JWT tokens (sets `AIRFLOW__API__SECRET_KEY`) used by Airflow >= 3.0
+  ## - Used for Flask session signing and CSRF protection
+  ## - [CRITICAL] The default value below is PUBLICLY KNOWN and MUST be changed for ANY deployment
+  ## - [DANGER] Using the default enables session hijacking and unauthorized access
+  ## - [PRODUCTION] For production, use external secret manager (AWS Secrets Manager, Vault, etc.)
+  ##
+  ## Generate a new secret key:
+  ##   python -c "import secrets; print(secrets.token_urlsafe(32))"
+  ##
+  ## Alternative: Set via environment variable from external secret:
+  ##   airflow:
+  ##     extraEnv:
+  ##       - name: AIRFLOW__API__SECRET_KEY
+  ##         valueFrom:
+  ##           secretKeyRef:
+  ##             name: airflow-secrets
+  ##             key: api-secret-key
+  ##
+  ## Documentation: charts/airflow/docs/faq/security/set-webserver-secret-key.md
+  ##
+  apiSecretKey: ~
+
+  ########################################
+  ## JWT Token Configuration
+  ## >>> AUTO-GENERATED FOR AIRFLOW 3.0+ <<<
+  ########################################
+  ## - Secret key used to encode and decode JWTs for internal API authentication in Airflow 3.0+
+  ## - Sets: `AIRFLOW__API_AUTH__JWT_SECRET` (airflow.cfg: `[api_auth] jwt_secret`)
+  ## - [AUTO-GENERATED] If empty, chart automatically generates a random JWT secret during deployment
+  ## - [PRODUCTION] For production deployments, set a persistent JWT secret to avoid component restarts on upgrades
+  ## - [WARNING] Must be identical across ALL API Server, DAG Processor, Scheduler, and Worker instances
+  ## - [SECURITY] For production, store in external secret manager and reference via `airflow.extraEnv`
+  ## - Generate a secure JWT secret:
+  ##   python -c "import secrets; print(secrets.token_urlsafe(32))"
+  ## - Documentation: https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/security/set-jwt-secret.md
+  ##
+  ## NOTE: Auto-generated secrets change on each `helm upgrade`, causing authentication failures
+  ##       and restarts of all Airflow components until they pick up the new secret.
+  ##
+  jwtSecret: ""
+
+  ## the name of an existing Kubernetes Secret containing the JWT secret
+  ## - [PRODUCTION RECOMMENDED] Use this instead of `jwtSecret` to reference an external secret
+  ## - If set, this takes precedence over `jwtSecret` and auto-generation
+  ## - The secret must exist before deploying the chart
+  ## - Use with `jwtSecretKey` to specify which key in the Secret contains the JWT value
+  ## - Example: jwtSecretName: "airflow-jwt-secret"
+  ##
+  jwtSecretName: ""
+
+  ## the key within the Kubernetes Secret that contains the JWT secret value
+  ## - Only used when `jwtSecretName` is set
+  ## - Defaults to "value" if not specified
+  ## - Example: jwtSecretKey: "jwt-secret"
+  ##
+  jwtSecretKey: ""
+
+  ## annotations for the auto-generated JWT secret (only applied when jwtSecretName is NOT set)
+  ## - Add custom annotations to the JWT secret generated by the chart
+  ## - Only applied when using auto-generated or inline `jwtSecret` (not used with `jwtSecretName`)
+  ## - Common use cases: External Secrets Operator, Sealed Secrets, cross-namespace replication
+  ##
+  ## ____ EXAMPLE _______________
+  ##   jwtSecretAnnotations:
+  ##     # External Secrets Operator - mark secret as managed externally
+  ##     "externalsecrets.io/managed-by": "external-secrets"
+  ##
+  ##     # Kubernetes Replicator - replicate secret across namespaces
+  ##     "replicator.v1.mittwald.de/replicate-to": "staging,production"
+  ##
+  ##     # ArgoCD - ignore differences in secret data during sync
+  ##     "argocd.argoproj.io/sync-options": "IgnoreExtraneous"
+  ##
+  ##     # Sealed Secrets - annotate for sealed-secrets controller
+  ##     "sealedsecrets.bitnami.com/managed": "true"
+  ##
+  ##     # Custom annotations for your secret management workflow
+  ##     "company.com/secret-type": "jwt-token"
+  ##     "company.com/rotation-policy": "90-days"
+  ##
+  jwtSecretAnnotations: {}
 
   ## environment variables for airflow configs
   ## - airflow env-vars are structured: "AIRFLOW__{config_section}__{config_name}"
@@ -56,7 +199,16 @@ airflow:
   ##     AIRFLOW__SMTP__SMTP_STARTTLS: "False"
   ##
   ##     # domain used in airflow emails
+  ##     # For Airflow v2
   ##     AIRFLOW__WEBSERVER__BASE_URL: "http://airflow.example.com"
+  ##     # For Airflow v3
+  ##     AIRFLOW__API__BASE_URL: "http://airflow.example.com"
+  ##
+  ##     # JWT Token Configuration (Airflow 3.0+)
+  ##     AIRFLOW__API_AUTH__JWT_EXPIRATION_TIME: "600"  # JWT token expiration in seconds (default: 300)
+  ##     AIRFLOW__API_AUTH__JWT_LEEWAY: "10"  # Leeway in seconds for JWT expiry validation (clock skew tolerance)
+  ##     AIRFLOW__API_AUTH__JWT_AUDIENCE: "airflow"  # Audience claim for JWT validation (strongly recommended, can be comma-separated)
+  ##     AIRFLOW__API_AUTH__JWT_ISSUER: "airflow.example.com"  # Issuer claim for JWT tokens (strongly recommended, unique per deployment)
   ##
   ##     # ether environment variables
   ##     HTTP_PROXY: "http://proxy.example.com:8080"
@@ -933,6 +1085,326 @@ web:
   ##
   extraVolumes: []
 
+apiServer:
+  ########################################
+  ## FILE | webserver_config.py
+  ########################################
+  ##
+  webserverConfig:
+    ## if the `webserver_config.py` file is mounted
+    ## - set to false if you wish to mount your own `webserver_config.py` file
+    ##
+    enabled: true
+
+    ## the full content of the `webserver_config.py` file (as a string)
+    ## - docs for Flask-AppBuilder security configs:
+    ##   https://flask-appbuilder.readthedocs.io/en/latest/security.html
+    ##
+    ## ____ EXAMPLE _______________
+    ##   stringOverride: |
+    ##     from airflow import configuration as conf
+    ##     from flask_appbuilder.security.manager import AUTH_DB
+    ##
+    ##     # the SQLAlchemy connection string
+    ##     SQLALCHEMY_DATABASE_URI = conf.get('core', 'SQL_ALCHEMY_CONN')
+    ##
+    ##     # use embedded DB for auth
+    ##     AUTH_TYPE = AUTH_DB
+    ##
+    stringOverride: ""
+
+    ## the name of a Secret containing a `webserver_config.py` key
+    ##
+    existingSecret: ""
+
+  ## the number of web Pods to run
+  ## - if you set this >1 we recommend defining a `web.podDisruptionBudget`
+  ##
+  replicas: 0
+
+  ## resource requests/limits for the web Pod
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## the nodeSelector configs for the web Pods
+  ## - docs for nodeSelector:
+  ##   https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  ##
+  nodeSelector: {}
+
+  ## the affinity configs for the web Pods
+  ## - spec for Affinity:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#affinity-v1-core
+  ##
+  affinity: {}
+
+  ## the toleration configs for the web Pods
+  ## - spec for Toleration:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#toleration-v1-core
+  ##
+  tolerations: []
+
+  ## the topologySpreadConstraints configs for the web Pods
+  ## - docs for topologySpreadConstraints:
+  ##   https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  ##
+  topologySpreadConstraints: []
+
+  ## the security context for the web Pods
+  ## - spec for PodSecurityContext:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core
+  ##
+  securityContext: {}
+
+  ## labels for the web Deployment
+  ##
+  labels: {}
+
+  ## Pod labels for the web Deployment
+  ##
+  podLabels: {}
+
+  ## annotations for the web Deployment
+  ##
+  annotations: {}
+
+  ## Pod annotations for the web Deployment
+  ##
+  podAnnotations: {}
+
+  ## if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true"
+  ##
+  safeToEvict: true
+
+  ## configs for the PodDisruptionBudget of the web Deployment
+  ##
+  podDisruptionBudget:
+    ## if a PodDisruptionBudget resource is created for the web Deployment
+    ##
+    enabled: false
+
+    ## the `apiVersion` to use for PodDisruptionBudget resources
+    ## - for Kubernetes 1.21 and later: "policy/v1"
+    ## - for Kubernetes 1.20 and before: "policy/v1beta1"
+    ##
+    apiVersion: policy/v1
+
+    ## the maximum unavailable pods/percentage for the web Deployment
+    ##
+    maxUnavailable: ""
+
+    ## the minimum available pods/percentage for the web Deployment
+    ##
+    minAvailable: ""
+
+  ## configs for the Service of the web Pods
+  ##
+  service:
+    annotations: {}
+    sessionAffinity: "None"
+    sessionAffinityConfig: {}
+    type: ClusterIP
+    externalPort: 8080
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    nodePort:
+      http: ""
+
+  ## configs for the web Pods' readiness probe
+  ##
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+  ## configs for the web Pods' liveness probe
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+  ## extra pip packages to install in the web Pods
+  ##
+  ## ____ EXAMPLE _______________
+  ##   extraPipPackages:
+  ##     - "SomeProject==1.0.0"
+  ##
+  extraPipPackages: []
+
+  ## extra containers for the web Pods
+  ## - spec for Container:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core
+  ##
+  extraContainers: []
+
+  ## extra init-containers for the web Pods
+  ## - spec of Container:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core
+  ##
+  extraInitContainers: []
+
+  ## extra VolumeMounts for the web Pods
+  ## - spec for VolumeMount:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volumemount-v1-core
+  ##
+  extraVolumeMounts: []
+
+  ## extra Volumes for the web Pods
+  ## - spec for Volume:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volume-v1-core
+  ##
+  extraVolumes: []
+
+dagProcessor:
+  ## if the dag-processor Deployment is created
+  ## Since Airflow 2.3.0 Dag Processor can run as standlone Deployment
+  ## [WARNING] Airflow 3.X Dag Processor is mandatory
+  ##
+  enabled: false
+
+  ## the number of dagProcessor Pods to run
+  ## - if you set this >1 we recommend defining a `web.podDisruptionBudget`
+  ##
+  replicas: 1
+
+  ## resource requests/limits for the dagProcessor Pod
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## the nodeSelector configs for the dagProcessor Pods
+  ## - docs for nodeSelector:
+  ##   https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  ##
+  nodeSelector: {}
+
+  ## the affinity configs for the dagProcessor Pods
+  ## - spec for Affinity:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#affinity-v1-core
+  ##
+  affinity: {}
+
+  ## the toleration configs for the dagProcessor Pods
+  ## - spec for Toleration:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#toleration-v1-core
+  ##
+  tolerations: []
+
+  ## the topologySpreadConstraints configs for the dagProcessor Pods
+  ## - docs for topologySpreadConstraints:
+  ##   https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  ##
+  topologySpreadConstraints: []
+
+  ## the security context for the dagProcessor Pods
+  ## - spec for PodSecurityContext:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core
+  ##
+  securityContext: {}
+
+  ## labels for the dagProcessor Deployment
+  ##
+  labels: {}
+
+  ## Pod labels for the dagProcessor Deployment
+  ##
+  podLabels: {}
+
+  ## annotations for the dagProcessor Deployment
+  ##
+  annotations: {}
+
+  ## Pod annotations for the dagProcessor Deployment
+  ##
+  podAnnotations: {}
+
+  ## if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true"
+  ##
+  safeToEvict: true
+
+  ## configs for the PodDisruptionBudget of the dagProcessor Deployment
+  ##
+  podDisruptionBudget:
+    ## if a PodDisruptionBudget resource is created for the dagProcessor Deployment
+    ##
+    enabled: false
+
+    ## the `apiVersion` to use for PodDisruptionBudget resources
+    ## - for Kubernetes 1.21 and later: "policy/v1"
+    ## - for Kubernetes 1.20 and before: "policy/v1beta1"
+    ##
+    apiVersion: policy/v1
+
+    ## the maximum unavailable pods/percentage for the dagProcessor Deployment
+    ##
+    maxUnavailable: ""
+
+    ## the minimum available pods/percentage for the dagProcessor Deployment
+    ##
+    minAvailable: ""
+
+  ## configs for the Service of the dagProcessor Pods
+  ##
+  service:
+    annotations: {}
+    sessionAffinity: "None"
+    sessionAffinityConfig: {}
+    type: ClusterIP
+    externalPort: 8080
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    nodePort:
+      http: ""
+
+  ## configs for the dagProcessor Pods' liveness probe
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+  ## extra pip packages to install in the dagProcessor Pods
+  ##
+  ## ____ EXAMPLE _______________
+  ##   extraPipPackages:
+  ##     - "SomeProject==1.0.0"
+  ##
+  extraPipPackages: []
+
+  ## extra containers for the dagProcessor Pods
+  ## - spec for Container:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core
+  ##
+  extraContainers: []
+
+  ## extra init-containers for the dagProcessor Pods
+  ## - spec of Container:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core
+  ##
+  extraInitContainers: []
+
+  ## extra VolumeMounts for the dagProcessor Pods
+  ## - spec for VolumeMount:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volumemount-v1-core
+  ##
+  extraVolumeMounts: []
+
+  ## extra Volumes for the dagProcessor Pods
+  ## - spec for Volume:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volume-v1-core
+  ##
+  extraVolumes: []
+
 ###################################
 ## COMPONENT | Airflow Workers
 ###################################
@@ -1669,6 +2141,46 @@ ingress:
       ##
       secretName: ""
 
+  ## configs for the Ingress of the web Service
+  ##
+  apiServer:
+    ## annotations for the web Ingress
+    ##
+    annotations: {}
+
+    ## additional labels for the web Ingress
+    ##
+    labels: {}
+
+    ## the path for the web Ingress
+    ## - [WARNING] do NOT include the trailing slash (for root, set an empty string)
+    ##
+    ## ____ EXAMPLE _______________
+    ##   # webserver URL: http://example.com/airflow
+    ##   path: "/airflow"
+    ##
+    path: ""
+
+    ## the hostname for the web Ingress
+    ##
+    host: ""
+
+    ## the Ingress Class for the web Ingress
+    ## - [WARNING] requires Kubernetes 1.18 or later, use "kubernetes.io/ingress.class" annotation for older versions
+    ##
+    ingressClassName: ""
+
+    ## configs for web Ingress TLS
+    ##
+    tls:
+      ## enable TLS termination for the web Ingress
+      ##
+      enabled: false
+
+      ## the name of a pre-created Secret containing a TLS private key and certificate
+      ##
+      secretName: ""
+
     ## http paths to add to the web Ingress before the default path
     ##
     ## ____ EXAMPLE _______________
@@ -2205,7 +2717,7 @@ externalDatabase:
 ###################################
 redis:
   ## if the `stable/redis` chart is used
-  ## - set to `false` if `airflow.executor` is `KubernetesExecutor`
+  ## - set to `false` if `airflow.executor` or `airflow.executors` is `KubernetesExecutor`
   ## - set to `false` if using `externalRedis.*`
   ##
   enabled: true
@@ -2214,7 +2726,7 @@ redis:
   ##
   image:
     registry: docker.io
-    repository: bitnami/redis
+    repository: bitnamilegacy/redis
     tag: 6.2.14-debian-12-r17
     pullPolicy: IfNotPresent
 

@@ -47,8 +47,13 @@
 
 {{- /* if we show the webserver secret_key warning */ -}}
 {{- $web_secret_warning := true }}
-{{- $web_secret_envvars := list "AIRFLOW__WEBSERVER__SECRET_KEY" "AIRFLOW__WEBSERVER__SECRET_KEY_CMD" "AIRFLOW__WEBSERVER__SECRET_KEY_SECRET" }}
-{{- if not (eq .Values.airflow.webserverSecretKey "THIS IS UNSAFE!")  }}
+{{- $web_secret_envvars := list }}
+{{- if semverCompare "<3.0.0" (include "airflow.version" .) }}
+  {{- $web_secret_envvars = list "AIRFLOW__WEBSERVER__SECRET_KEY" "AIRFLOW__WEBSERVER__SECRET_KEY_CMD" "AIRFLOW__WEBSERVER__SECRET_KEY_SECRET" }}
+{{- else }}
+  {{- $web_secret_envvars = list "AIRFLOW__API__SECRET_KEY" "AIRFLOW__API__SECRET_KEY_CMD" "AIRFLOW__API__SECRET_KEY_SECRET" }}
+{{- end }}
+{{- if and (ne .Values.airflow.webserverSecretKey "THIS IS UNSAFE!") (ne .Values.airflow.apiSecretKey "") (ne .Values.airflow.apiSecretKeyName "")  }}
 {{- $web_secret_warning = false }}
 {{- end }}
 {{- range $key, $val := .Values.airflow.config }}
@@ -120,6 +125,48 @@
 {{- $scheduler_livenessProbe_taskCreationCheck_warning = true }}
 {{- end }}
 
+{{- /* Determine web service details based on Airflow version */ -}}
+{{- $webServiceName := "" }}
+{{- $webServicePort := 0 }}
+{{- $webServiceType := "" }}
+{{- $webComponentName := "" }}
+{{- $ingressWebHost := "" }}
+{{- $ingressWebPath := "" }}
+{{- $ingressWebTlsEnabled := false }}
+{{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
+  {{- $webServiceName = printf "%s-api-server" (include "airflow.fullname" .) }}
+  {{- $webServicePort = .Values.apiServer.service.externalPort }}
+  {{- $webServiceType = .Values.apiServer.service.type }}
+  {{- $webComponentName = "API Server" }}
+  {{- $ingressWebHost = .Values.ingress.apiServer.host }}
+  {{- $ingressWebPath = .Values.ingress.apiServer.path }}
+  {{- $ingressWebTlsEnabled = .Values.ingress.apiServer.tls.enabled }}
+{{- else }}
+  {{- $webServiceName = printf "%s-web" (include "airflow.fullname" .) }}
+  {{- $webServicePort = .Values.web.service.externalPort }}
+  {{- $webServiceType = .Values.web.service.type }}
+  {{- $webComponentName = "Webserver" }}
+  {{- $ingressWebHost = .Values.ingress.web.host }}
+  {{- $ingressWebPath = .Values.ingress.web.path }}
+  {{- $ingressWebTlsEnabled = .Values.ingress.web.tls.enabled }}
+{{- end }}
+
+{{- /* if we show the JWT secret warning (Airflow 3.0+ only) */ -}}
+{{- $jwt_secret_warning := false }}
+{{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
+  {{- if and (not .Values.airflow.jwtSecret) (not .Values.airflow.jwtSecretName) }}
+  {{- $jwt_secret_warning = true }}
+  {{- end }}
+{{- end }}
+
+{{- /* if we show the auth manager warning (Airflow 3.1.0+ only) */ -}}
+{{- $auth_manager_warning := false }}
+{{- if semverCompare ">=3.1.0" (include "airflow.version" .) }}
+  {{- if not (or .Values.airflow.config.AIRFLOW__CORE__AUTH_MANAGER .Values.airflow.config.AIRFLOW__API__AUTH_BACKENDS) }}
+  {{- $auth_manager_warning = true }}
+  {{- end }}
+{{- end }}
+
 ========================================================================
 Thanks for deploying Apache Airflow with the User-Community Helm Chart!
 
@@ -140,43 +187,52 @@ You have NOT set up persistence for worker task logs, do this by:
   2. Using remote logging with `AIRFLOW__LOGGING__REMOTE_LOGGING`
 {{ end }}
 
-{{- if and (not .Values.ingress.enabled) (eq .Values.web.service.type "ClusterIP") }}
-It looks like you have NOT exposed the Airflow Webserver, do this by:
+{{- if and (not .Values.ingress.enabled) (eq $webServiceType "ClusterIP") }}
+It looks like you have NOT exposed the Airflow {{ $webComponentName }}, do this by:
   1. Using a Kubernetes Ingress with `ingress.*`
+{{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
+  2. Using a Kubernetes LoadBalancer/NodePort type Service with `apiServer.service.type`
+{{- else }}
   2. Using a Kubernetes LoadBalancer/NodePort type Service with `web.service.type`
+{{- end }}
 {{ end }}
 
 {{- if .Values.ingress.enabled }}
 Your Kubernetes Ingress endpoint URLs:
-  * Airflow Webserver:  http{{ if .Values.ingress.web.tls.enabled }}s{{ end }}://{{ .Values.ingress.web.host }}{{ .Values.ingress.web.path }}/
+  * Airflow {{ $webComponentName }}:  http{{ if $ingressWebTlsEnabled }}s{{ end }}://{{ $ingressWebHost }}{{ $ingressWebPath }}/
 {{- if .Values.flower.enabled }}
   * Flower Dashboard:   http{{ if .Values.ingress.flower.tls.enabled }}s{{ end }}://{{ .Values.ingress.flower.host }}{{ .Values.ingress.flower.path }}/
 {{- end }}
 {{ end }}
 
-{{- if eq .Values.web.service.type "LoadBalancer" }}
-You deployed a "LoadBalancer" type Service for the Airflow Webserver:
-  * External IP:    kubectl get svc/{{ include "airflow.fullname" . }}-web --namespace {{ .Release.Namespace }} -o jsonpath="{.status.loadBalancer.ingress[0].ip}"
-  * External Port:  {{ .Values.web.service.externalPort }}
+{{- if eq $webServiceType "LoadBalancer" }}
+You deployed a "LoadBalancer" type Service for the Airflow {{ $webComponentName }}:
+  * External IP:    kubectl get svc/{{ $webServiceName }} --namespace {{ .Release.Namespace }} -o jsonpath="{.status.loadBalancer.ingress[0].ip}"
+  * External Port:  {{ $webServicePort }}
   * NOTE:           it may take a few minutes for the External IP to be provisioned by your cloud provider
 {{ end }}
 
-{{- if eq .Values.web.service.type "NodePort" }}
-You deployed a "NodePort" type Service for the Airflow Webserver:
+{{- if eq $webServiceType "NodePort" }}
+You deployed a "NodePort" type Service for the Airflow {{ $webComponentName }}:
   * Node IP:    kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}"
-  * Node Port:  kubectl get svc/{{ include "airflow.fullname" . }}-web --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}"
+  * Node Port:  kubectl get svc/{{ $webServiceName }} --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}"
   * NOTE:       any Node's external IP will work
 {{ end }}
 
 {{- if true }}
 Use these commands to port-forward the Services to your localhost:
-  * Airflow Webserver:  kubectl port-forward svc/{{ include "airflow.fullname" . }}-web 8080:8080 --namespace {{ .Release.Namespace }}
+  * Airflow {{ $webComponentName }}:  kubectl port-forward svc/{{ $webServiceName }} 8080:{{ $webServicePort }} --namespace {{ .Release.Namespace }}
 {{- if .Values.flower.enabled }}
   * Flower Dashboard:   kubectl port-forward svc/{{ include "airflow.fullname" . }}-flower 5555:5555 --namespace {{ .Release.Namespace }}
 {{- end }}
+{{- if and (semverCompare ">=3.0.0" (include "airflow.version" .)) (.Values.dagProcessor.enabled) }}
+  * DAG Processor:      kubectl get deploy/{{ include "airflow.fullname" . }}-dag-processor --namespace {{ .Release.Namespace }}
+{{- else if and (semverCompare ">=2.3.0" (include "airflow.version" .)) (.Values.dagProcessor.enabled) }}
+  * DAG Processor:      kubectl get deploy/{{ include "airflow.fullname" . }}-dag-processor --namespace {{ .Release.Namespace }} (standalone mode)
+{{- end }}
 {{ end }}
 
-{{- if or ($fernet_key_warning) ($web_secret_warning) ($extra_pip_warning) ($embedded_postgres_warning) ($known_host_warning) }}
+{{- if or ($fernet_key_warning) ($web_secret_warning) ($jwt_secret_warning) ($auth_manager_warning) ($extra_pip_warning) ($embedded_postgres_warning) ($known_host_warning) }}
 ====================
       WARNINGS
 ====================
@@ -186,8 +242,27 @@ Use these commands to port-forward the Services to your localhost:
 {{ end }}
 
 {{- if $web_secret_warning }}
+{{- if semverCompare ">=3.0.0" (include "airflow.version" .) }}
+[CRITICAL] default API secret_key value!
+  * HELP: set a custom value with `airflow.apiSecretKey` or `AIRFLOW__API__SECRET_KEY`
+{{- else }}
 [CRITICAL] default webserver secret_key value!
   * HELP: set a custom value with `airflow.webserverSecretKey` or `AIRFLOW__WEBSERVER__SECRET_KEY`
+{{- end }}
+{{ end }}
+
+{{- if $jwt_secret_warning }}
+[HIGH] JWT secret is auto-generated and will change on every helm upgrade!
+  * HELP: set `airflow.jwtSecretName` to reference a persistent Kubernetes Secret
+  * DOCS: charts/airflow/docs/faq/security/set-jwt-secret.md
+  * NOTE: auto-generated secrets cause component restarts and task failures during upgrades
+{{ end }}
+
+{{- if $auth_manager_warning }}
+[HIGH] Airflow 3.1.0+ changed default authentication to Simple Auth!
+  * HELP: for production, explicitly configure FAB Auth Manager:
+          airflow.config.AIRFLOW__CORE__AUTH_MANAGER: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
+  * DOCS: charts/airflow/docs/guides/airflow-3-migration.md#authentication
 {{ end }}
 
 {{- if $external_database_password_warning }}
