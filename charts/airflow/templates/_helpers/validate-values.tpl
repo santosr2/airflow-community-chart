@@ -62,7 +62,7 @@
 {{- end }}
 
 {{- if semverCompare ">= 3.0.0" (include "airflow.version" .) -}}
-  {{- if and .Values.airflow.executor (ne .Values.airflow.executor "CeleryExecutor") -}}
+  {{- if and .Values.airflow.executor (ne .Values.airflow.executor "CeleryExecutor") (empty .Values.airflow.executors) -}}
     {{ required "The `airflow.executor` setting is deprecated in Airflow 3.0+. Use `airflow.executors` instead!" nil }}
   {{- end -}}
   {{- if not .Values.airflow.executors -}}
