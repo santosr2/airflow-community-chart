@@ -231,3 +231,70 @@ Used to discover the master Service and Secret name created by the sub-chart.
 {{- end -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Check if FAB (Flask AppBuilder) auth manager is being used.
+Returns "true" if FAB is being used, empty otherwise.
+*/}}
+{{- define "airflow.auth.isFAB" -}}
+{{- if semverCompare "<3.0.0" (include "airflow.version" .) -}}
+{{- /* Airflow < 3.0 uses FAB by default */ -}}
+true
+{{- else -}}
+{{- /* Airflow >= 3.0: check if auth_manager is explicitly set to FAB */ -}}
+{{- $authManager := .Values.airflow.config.AIRFLOW__CORE__AUTH_MANAGER | default "" | lower -}}
+{{- if contains "fab" $authManager -}}
+true
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Map FAB role names to SimpleAuthManager role names.
+SimpleAuthManager only supports: admin, op, user, viewer
+*/}}
+{{- define "airflow.simpleAuthManager.mapRole" -}}
+{{- $role := . | lower -}}
+{{- if eq $role "admin" -}}
+admin
+{{- else if eq $role "op" -}}
+op
+{{- else if eq $role "user" -}}
+user
+{{- else if or (eq $role "viewer") (eq $role "public") -}}
+viewer
+{{- else -}}
+{{- /* Default to user for unknown roles */ -}}
+user
+{{- end -}}
+{{- end -}}
+
+{{/*
+Generate SimpleAuthManager users configuration string from airflow.users values.
+Format: "username:role,username:role"
+Example: "admin:admin,viewer:viewer"
+*/}}
+{{- define "airflow.simpleAuthManager.usersConfig" -}}
+{{- $users := list -}}
+{{- range .Values.airflow.users -}}
+  {{- $username := required "each `username` in `airflow.users` must be non-empty!" .username -}}
+  {{- /* Handle both string and list role formats */ -}}
+  {{- $firstRole := "" -}}
+  {{- if kindIs "string" .role -}}
+    {{- $firstRole = required "each string-type `role` in `airflow.users` must be non-empty!" .role -}}
+  {{- else if kindIs "slice" .role -}}
+    {{- if eq (len .role) 0 -}}
+      {{- fail "each list-type `role` in `airflow.users` must contain at least one element!" -}}
+    {{- end -}}
+    {{- $firstRole = index .role 0 -}}
+  {{- else -}}
+    {{- fail (printf "each `role` in `airflow.users` must be string-type or list-type, but got '%s'!" (kindOf .role)) -}}
+  {{- end -}}
+  {{- /* Map FAB role to SimpleAuthManager role */ -}}
+  {{- $mappedRole := include "airflow.simpleAuthManager.mapRole" $firstRole -}}
+  {{- /* Build user entry: username:role */ -}}
+  {{- $userEntry := printf "%s:%s" $username $mappedRole -}}
+  {{- $users = append $users $userEntry -}}
+{{- end -}}
+{{- join "," $users -}}
+{{- end -}}
