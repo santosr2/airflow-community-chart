@@ -1,0 +1,27 @@
+name: release image / airflow-fab-3-alpine
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - images/airflow-fab/3/VERSION
+
+jobs:
+  call_workflow:
+    uses: ./.github/workflows/_release-image.yaml
+    with:
+      folder_path: images/airflow-fab/3
+      login_to_dockerhub: false
+
+      image_title: airflow-fab
+      image_description: the airflow-fab image for the user-community airflow helm chart CI
+
+      image_flavor: alpine
+      image_flavor_is_primary: true
+
+      tag_with_latest: true
+      tag_with_major_version: true
+
+      build_platforms: |
+        linux/amd64
