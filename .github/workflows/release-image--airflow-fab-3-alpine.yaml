@@ -7,6 +7,10 @@ on:
     paths:
       - images/airflow-fab/3/VERSION
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   call_workflow:
     uses: ./.github/workflows/_release-image.yaml
