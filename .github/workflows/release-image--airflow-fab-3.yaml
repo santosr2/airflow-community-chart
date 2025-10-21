@@ -1,15 +1,13 @@
 name: release image / airflow-fab-3-alpine
 
 on:
+  pull_request:
   push:
     branches:
       - main
     paths:
       - images/airflow-fab/3/VERSION
-
-permissions:
-  contents: read
-  packages: write
+      - .github/workflows/release-image--airflow-fab-3.yaml
 
 jobs:
   call_workflow:
