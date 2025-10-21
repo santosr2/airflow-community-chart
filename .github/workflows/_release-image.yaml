@@ -176,7 +176,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./${{ inputs.folder_path }}
-          push: false
+          push: true
           platforms: ${{ inputs.build_platforms }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

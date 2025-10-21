@@ -1,18 +1,17 @@
 name: release image / airflow-fab-3-alpine
 
 on:
-  pull_request:
   push:
     branches:
       - main
     paths:
-      - images/airflow-fab/3/alpine/VERSION
+      - images/airflow-fab/3/VERSION
 
 jobs:
   call_workflow:
     uses: ./.github/workflows/_release-image.yaml
     with:
-      folder_path: images/airflow-fab/3/alpine
+      folder_path: images/airflow-fab/3
       login_to_dockerhub: false
 
       image_title: airflow-fab
