@@ -22,7 +22,7 @@ flask_app, flask_appbuilder = www_app.create_app()
 {{- else }}
 {{- if semverCompare ">= 3.0.0" (include "airflow.version" .) }}
 import airflow.providers.fab.www.app as www_app
-flask_app = www_app.create_app(enable_plugins=False)
+flask_app = www_app.create_app(enable_plugins=True)
 {{- else }}
 import airflow.www.app as www_app
 flask_app = www_app.create_app()
