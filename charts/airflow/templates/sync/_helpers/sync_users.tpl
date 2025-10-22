@@ -211,8 +211,15 @@ def sync_all_users(user_wrappers: Dict[str, UserWrapper]) -> None:
     Sync all users in provided `user_wrappers`.
     """
     logging.info("BEGIN: airflow users sync")
+{{- if semverCompare ">= 3.0.0" (include "airflow.version" .) }}
+    # Airflow 3.0+ requires Flask application context for FAB provider operations
+    with flask_app.app_context():
+        for user_wrapper in user_wrappers.values():
+            sync_user(user_wrapper)
+{{- else }}
     for user_wrapper in user_wrappers.values():
         sync_user(user_wrapper)
+{{- end }}
     logging.info("END: airflow users sync")
 
     # ensures than any SQLAlchemy sessions are closed (so we don't hold a connection to the database)
