@@ -1,18 +1,18 @@
-name: release image / airflow-fab-3
+name: release image / airflow-fab
 
 on:
   push:
     branches:
       - main
     paths:
-      - images/airflow-fab/3/VERSION
-      - .github/workflows/release-image--airflow-fab-3.yaml
+      - images/airflow-fab/VERSION
+      - .github/workflows/release-image--airflow-fab.yaml
 
 jobs:
   call_workflow:
     uses: ./.github/workflows/_release-image.yaml
     with:
-      folder_path: images/airflow-fab/3
+      folder_path: images/airflow-fab
 
       image_title: airflow-fab
       image_description: the airflow-fab image for the user-community airflow helm chart CI
@@ -25,3 +25,4 @@ jobs:
 
       build_platforms: |
         linux/amd64
+        linux/arm64
