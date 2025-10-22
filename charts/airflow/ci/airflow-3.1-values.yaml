@@ -7,8 +7,8 @@
 ##
 airflow:
   image:
-    repository: apache/airflow
-    tag: "3.1.0-python3.12"
+    repository: ghcr.io/santosr2/airflow-fab
+    tag: 3.1.0-patch.0
 
   config:
     AIRFLOW__API__AUTH_BACKENDS: "airflow.providers.fab.auth_manager.api.auth.backend.jwt,airflow.providers.fab.auth_manager.api.auth.backend.session,airflow.providers.fab.auth_manager.api.auth.backend.basic_auth"
@@ -17,36 +17,11 @@ airflow:
   ## minimal resources for CI
   executors: [CeleryExecutor]
 
-  extraPipPackages:
-    - apache-airflow-providers-fab==3.0.0
-
-scheduler:
-  extraPipPackages:
-    - apache-airflow-providers-fab==3.0.0
-
 ## API Server configuration (Airflow 3.0+ component)
 apiServer:
   ## minimal replicas for CI
   replicas: 1
 
-  extraPipPackages:
-    - apache-airflow-providers-fab==3.0.0
-
 ## DAG Processor configuration (Airflow 2.3+ component, required for Airflow 3.0+)
 dagProcessor:
   enabled: true
-
-  extraPipPackages:
-    - apache-airflow-providers-fab==3.0.0
-
-workers:
-  extraPipPackages:
-    - apache-airflow-providers-fab==3.0.0
-
-triggerer:
-  extraPipPackages:
-    - apache-airflow-providers-fab==3.0.0
-
-flower:
-  extraPipPackages:
-    - apache-airflow-providers-fab==3.0.0

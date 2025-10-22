@@ -4,7 +4,7 @@
 airflow:
   image:
     repository: apache/airflow
-    tag: "2.11.0-python3.10"
+    tag: 2.11.0-python3.10
 
 ## DAG Processor configuration (Airflow 2.3+ component)
 dagProcessor:
