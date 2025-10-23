@@ -304,9 +304,21 @@ airflow:
 
     ## Ensure FAB permissions are updated on startup (avoids None perms on fresh installs)
     AIRFLOW__FAB__UPDATE_FAB_PERMS: "True"
+
+  ## Define users (synced to database via FAB)
+  users:
+    - username: admin
+      password: admin
+      role: Admin
+      firstName: Admin
+      lastName: User
+      email: admin@example.com
 ```
 
 **For Simple Authentication (not recommended for production):**
+
+SimpleAuthManager manages users via configuration instead of database. The chart automatically configures SimpleAuthManager users from `airflow.users`:
+
 ```yaml
 airflow:
   image:
@@ -314,7 +326,36 @@ airflow:
 
   config:
     AIRFLOW__CORE__AUTH_MANAGER: "airflow.auth.managers.simple.simple_auth_manager.SimpleAuthManager"
+
+  ## Define users (configured via environment variables for SimpleAuthManager)
+  users:
+    - username: admin
+      role: Admin
+      # Note: firstName, lastName, email, and password are NOT used by SimpleAuthManager
+      # Passwords are auto-generated and logged to the webserver logs
+    - username: viewer
+      role: Viewer
 ```
+
+**Key Differences:**
+
+| Feature | FAB Auth Manager | SimpleAuthManager |
+|---------|------------------|-------------------|
+| User Storage | Database | Configuration File |
+| Password Management | Set in `airflow.users` | Auto-generated (logged to webserver) |
+| User Fields | username, password, role, firstName, lastName, email | username, role only |
+| Role Customization | Full RBAC support | Fixed roles: admin, op, user, viewer |
+| Production Ready | Yes | No (development only) |
+| Requires Provider | `apache-airflow-providers-fab` | Built-in |
+
+**Role Mapping:**
+
+When using SimpleAuthManager with `airflow.users`, roles are automatically mapped:
+
+- `Admin` → `admin` (full access)
+- `Op` → `op` (operator: manage connections, variables, pools)
+- `User` → `user` (manage DAGs)
+- `Viewer` → `viewer` (read-only)
 
 See: [Airflow Auth Manager Documentation](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/auth-manager/)
 

@@ -1,13 +1,18 @@
-## this values file tests Airflow 3.1.0 with the latest features
+## this values file tests Airflow 3.1.0 with the latest features and FAB
 ## - API Server (replaces Webserver)
 ## - DAG Processor (separate from Scheduler)
 ## - JWT authentication (auto-generated if not set)
 ## - Latest 3.x features and improvements
+## - Run with FAB authentication
 ##
 airflow:
   image:
-    repository: apache/airflow
-    tag: "3.1.0-python3.12"
+    repository: ghcr.io/santosr2/airflow-fab
+    tag: 3.1.0-patch.0
+
+  config:
+    AIRFLOW__API__AUTH_BACKENDS: "airflow.providers.fab.auth_manager.api.auth.backend.jwt,airflow.providers.fab.auth_manager.api.auth.backend.session,airflow.providers.fab.auth_manager.api.auth.backend.basic_auth"
+    AIRFLOW__CORE__AUTH_MANAGER: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
 
   ## minimal resources for CI
   executors: [CeleryExecutor]

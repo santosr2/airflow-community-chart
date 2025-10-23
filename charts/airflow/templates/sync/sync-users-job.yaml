@@ -1,4 +1,4 @@
-{{- if and (.Values.airflow.users) (not .Values.airflow.usersUpdate) }}
+{{- if and (.Values.airflow.users) (not .Values.airflow.usersUpdate) (include "airflow.auth.isFAB" .) }}
 {{- $podNodeSelector := include "airflow.podNodeSelector" (dict "Release" .Release "Values" .Values "nodeSelector" .Values.airflow.sync.nodeSelector) }}
 {{- $podTopologySpreadConstraints := include "airflow.podTopologySpreadConstraints" (dict "Release" .Release "Values" .Values "topologySpreadConstraints" .Values.airflow.sync.topologySpreadConstraints) }}
 {{- $podAffinity := include "airflow.podAffinity" (dict "Release" .Release "Values" .Values "affinity" .Values.airflow.sync.affinity) }}
@@ -95,6 +95,10 @@ spec:
           envFrom:
             {{- include "airflow.envFrom" . | indent 12 }}
           env:
+            {{- if semverCompare ">= 3.0.0" (include "airflow.version" .) }}
+            - name: AIRFLOW__FAB__CONFIG_FILE
+              value: "${AIRFLOW_HOME}/webserver_config.py"
+            {{- end }}
             {{- include "airflow.env" . | indent 12 }}
           command:
             {{- include "airflow.command" . | indent 12 }}
