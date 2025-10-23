@@ -40,7 +40,7 @@ print_welcome_page() {
 #   None
 #########################
 print_image_welcome_page() {
-    local github_url="https://github.com/airflow-helm/charts"
+    local github_url="https://github.com/santosr2/airflow-community-chart"
 
     log ""
     log " ${BOLD}Welcome to a ${BITNAMI_APP_NAME} container!${RESET}"

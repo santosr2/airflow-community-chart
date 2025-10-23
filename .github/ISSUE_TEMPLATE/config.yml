@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: 🤔 Questions & Answers
-    url: https://github.com/airflow-helm/charts/discussions
+    url: https://github.com/santosr2/airflow-community-chart/discussions
     about: Ask and answer questions using GitHub Discussions

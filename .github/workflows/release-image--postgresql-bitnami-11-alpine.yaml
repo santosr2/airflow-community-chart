@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - images/postgresql-bitnami/11/alpine/VERSION
+      - .github/workflows/release-image--postgresql-bitnami-11-alpine.yaml
 
 jobs:
   call_workflow:

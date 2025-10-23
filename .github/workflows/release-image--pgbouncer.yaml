@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - images/pgbouncer/VERSION
+      - .github/workflows/release-image--pgbouncer.yaml
 
 jobs:
   call_workflow:

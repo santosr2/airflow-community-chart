@@ -1,6 +1,6 @@
-[🔗 Return to `Table of Contents` for more guides 🔗](https://github.com/airflow-helm/charts/tree/main/charts/airflow#guides)
+[🔗 Return to `Table of Contents` for more guides 🔗](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#guides)
 
-> Note, this page was written for the [`User-Community Airflow Helm Chart`](https://github.com/airflow-helm/charts/tree/main/charts/airflow)
+> Note, this page was written for the [`User-Community Airflow Helm Chart`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow)
 
 # Upgrade Guide
 
@@ -40,5 +40,5 @@ helm upgrade \
 
 > 🟦 __Tip__ 🟦
 >
-> - find the full list of chart versions in our [CHANGELOG](https://github.com/airflow-helm/charts/blob/main/charts/airflow/CHANGELOG.md)
+> - find the full list of chart versions in our [CHANGELOG](https://github.com/santosr2/airflow-community-chart/blob/main/charts/airflow/CHANGELOG.md)
 > - `Watch 👀 on GitHub` to be notified about new chart versions, click "watch" → "custom" → "releases".

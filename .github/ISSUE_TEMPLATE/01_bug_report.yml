@@ -12,9 +12,9 @@ body:
     attributes:
       label: Checks
       options:
-        - label: I have checked for [existing issues](https://github.com/airflow-helm/charts/issues).
+        - label: I have checked for [existing issues](https://github.com/santosr2/airflow-community-chart/issues).
           required: true
-        - label: This report is about the [`User-Community Airflow Helm Chart`](https://github.com/airflow-helm/charts/tree/main/charts/airflow).
+        - label: This report is about the [`User-Community Airflow Helm Chart`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow).
           required: true
   - type: input
     id: chart-version
