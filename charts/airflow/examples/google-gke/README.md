@@ -1,6 +1,6 @@
-[🔗 Return to `Table of Contents` for more examples 🔗](https://github.com/airflow-helm/charts/tree/main/charts/airflow#examples)
+[🔗 Return to `Table of Contents` for more examples 🔗](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#examples)
 
-> Note, this page was written for the [`User-Community Airflow Helm Chart`](https://github.com/airflow-helm/charts/tree/main/charts/airflow)
+> Note, this page was written for the [`User-Community Airflow Helm Chart`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow)
 
 # Example - Google Kubernetes Engine (GKE) 
 

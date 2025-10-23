@@ -1,0 +1,17 @@
+name: test image / airflow-fab
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - images/airflow-fab/**
+
+jobs:
+  call_workflow:
+    uses: ./.github/workflows/_test-image.yaml
+    with:
+      folder_path: images/airflow-fab
+      build_platforms: |
+        linux/amd64
+        linux/arm64
