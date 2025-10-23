@@ -35,7 +35,7 @@ The following commands will add our repository to your helm:
 
 ```shell
 ## add this helm repository
-helm repo add airflow-stable https://airflow-helm.github.io/charts
+helm repo add airflow-stable https://santosr2.github.io/airflow-community-chart
 
 ## update your helm repo cache
 helm repo update

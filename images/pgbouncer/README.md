@@ -7,7 +7,5 @@ The Apache Airflow helm chart under [charts/airflow](https://github.com/santosr2
 - The [CHANGELOG.md](https://github.com/santosr2/airflow-community-chart/blob/main/images/pgbouncer/CHANGELOG.md) for this image.
 
 ### Pull Locations:
-- [DockerHub](https://hub.docker.com/r/airflowhelm/pgbouncer):
-  - `docker pull airflowhelm/pgbouncer:latest`
-- [GitHub Container Registry](http://ghcr.io/airflow-helm/pgbouncer):
-  - `docker pull ghcr.io/airflow-helm/pgbouncer:latest`
+- [GitHub Container Registry](http://ghcr.io/santosr2/pgbouncer):
+  - `docker pull ghcr.io/santosr2/pgbouncer:latest`
