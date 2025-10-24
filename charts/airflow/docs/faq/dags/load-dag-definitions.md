@@ -8,13 +8,18 @@ To use your airflow cluster, you will need to make your DAG definitions (python 
 
 While there are many ways you can achieve this, we natively support the following methods.
 
-## Option 1 - Git-Sync Sidecar 
+## Option 1 - Git-Sync Sidecar
 
 You may store DAG definitions in a git repo and configure the chart to automatically sync a local copy this repo into each airflow Pod at a regular interval.
 
+> 🟨 __Note__ 🟨
+>
+> The chart supports both git-sync v3 and v4 with automatic version detection.
+> For git-sync v4 migration information, see the [git-sync v4 migration guide](../../guides/git-sync-v4-migration.md).
+
 > 🟦 __Tip__ 🟦
 >
-> The content of the git repo will be stored at `{dags.path}/repo/`, 
+> The content of the git repo will be stored at `{dags.path}/repo/`,
 > by default this will be `/opt/airflow/dags/repo/`.
 
 <details>

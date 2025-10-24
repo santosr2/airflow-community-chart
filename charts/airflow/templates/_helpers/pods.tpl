@@ -245,47 +245,122 @@ EXAMPLE USAGE: {{ include "airflow.container.git_sync" (dict "Release" .Release 
   envFrom:
     {{- include "airflow.envFrom" . | indent 4 }}
   env:
-    {{- if .sync_one_time }}
+    {{/* Determine git-sync major version for conditional env var setting */ -}}
+    {{- $gitSyncVersion := .Values.dags.gitSync.image.tag | trimPrefix "v" | splitList "." | first -}}
+    {{- $isV4 := ge (int $gitSyncVersion) 4 -}}
+
+    {{- if $isV4 -}}
+    {{- /* One-time sync flag */ -}}
+    {{- if .sync_one_time -}}
+    - name: GITSYNC_ONE_TIME
+      value: "true"
+    {{- end -}}
+    {{- /* Core settings */}}
+    - name: GITSYNC_ROOT
+      value: "/dags"
+    - name: GITSYNC_LINK
+      value: "repo"
+    - name: GITSYNC_REPO
+      value: {{ .Values.dags.gitSync.repo | quote }}
+    - name: GITSYNC_DEPTH
+      value: {{ .Values.dags.gitSync.depth | quote }}
+    - name: GITSYNC_ADD_USER
+      value: "true"
+    - name: GITSYNC_MAX_FAILURES
+      value: {{ .Values.dags.gitSync.maxFailures | quote }}
+    - name: GITSYNC_SUBMODULES
+      value: {{ .Values.dags.gitSync.submodules | quote }}
+    - name: GITSYNC_SYNC_TIMEOUT
+      value: {{ .Values.dags.gitSync.syncTimeout | quote }}
+    {{- /* Branch/Rev/Ref handling */}}
+    - name: GITSYNC_REF
+      value: {{ .Values.dags.gitSync.ref | quote }}
+    {{- /* Sync period handling */ -}}
+    {{- if .Values.dags.gitSync.period }}
+    - name: GITSYNC_PERIOD
+      value: {{ .Values.dags.gitSync.period | quote }}
+    {{- end -}}
+    {{- if .Values.dags.gitSync.sshKnownHosts }}
+    - name: GITSYNC_SSH_KNOWN_HOSTS
+      value: "true"
+    - name: GITSYNC_SSH_KNOWN_HOSTS_FILE
+      value: "/etc/git-secret/known_hosts"
+    {{- else }}
+    - name: GITSYNC_SSH_KNOWN_HOSTS
+      value: "false"
+    {{- end -}}
+    {{- if .Values.dags.gitSync.httpSecret }}
+    - name: GITSYNC_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Values.dags.gitSync.httpSecret }}
+          key: {{ .Values.dags.gitSync.httpSecretUsernameKey }}
+    - name: GITSYNC_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Values.dags.gitSync.httpSecret }}
+          key: {{ .Values.dags.gitSync.httpSecretPasswordKey }}
+    {{- end -}}
+    {{- /* v4-specific options */ -}}
+    {{- if .Values.dags.gitSync.groupWrite }}
+    - name: GITSYNC_GROUP_WRITE
+      value: "true"
+    {{- end -}}
+    {{- if .Values.dags.gitSync.gitConfig }}
+    - name: GITSYNC_GIT_CONFIG
+      value: {{ .Values.dags.gitSync.gitConfig | quote }}
+    {{- end -}}
+
+    {{- /* V3 compatibility */ -}}
+    {{- else -}}
+    {{- /* One-time sync flag */ -}}
+    {{- if .sync_one_time -}}
     - name: GIT_SYNC_ONE_TIME
       value: "true"
-    {{- end }}
+    {{- end -}}
+    {{- /* Core settings */}}
     - name: GIT_SYNC_ROOT
       value: "/dags"
     - name: GIT_SYNC_DEST
       value: "repo"
     - name: GIT_SYNC_REPO
       value: {{ .Values.dags.gitSync.repo | quote }}
-    - name: GIT_SYNC_BRANCH
-      value: {{ .Values.dags.gitSync.branch | quote }}
-    - name: GIT_SYNC_REV
-      value: {{ .Values.dags.gitSync.revision | quote }}
     - name: GIT_SYNC_DEPTH
       value: {{ .Values.dags.gitSync.depth | quote }}
-    - name: GIT_SYNC_WAIT
-      value: {{ .Values.dags.gitSync.syncWait | quote }}
-    - name: GIT_SYNC_TIMEOUT
-      value: {{ .Values.dags.gitSync.syncTimeout | quote }}
     - name: GIT_SYNC_ADD_USER
       value: "true"
     - name: GIT_SYNC_MAX_SYNC_FAILURES
       value: {{ .Values.dags.gitSync.maxFailures | quote }}
     - name: GIT_SYNC_SUBMODULES
       value: {{ .Values.dags.gitSync.submodules | quote }}
+    - name: GIT_SYNC_TIMEOUT
+      value: {{ .Values.dags.gitSync.syncTimeout | quote }}
+    {{- /* Branch/Rev/Ref handling */}}
+    - name: GIT_SYNC_BRANCH
+      value: {{ .Values.dags.gitSync.branch | quote }}
+    - name: GIT_SYNC_REV
+      value: {{ .Values.dags.gitSync.revision | quote }}
+    {{- /* Sync period handling */}}
+    - name: GIT_SYNC_WAIT
+      value: {{ .Values.dags.gitSync.syncWait | quote }}
+    {{- /* SSH configuration (auto-detected in v4, explicit in v3) */ -}}
     {{- if .Values.dags.gitSync.sshSecret }}
     - name: GIT_SYNC_SSH
       value: "true"
     - name: GIT_SSH_KEY_FILE
       value: "/etc/git-secret/id_rsa"
-    {{- end }}
-    {{- if .Values.dags.gitSync.sshKnownHosts }}
-    - name: GIT_KNOWN_HOSTS
+    {{- end -}}
+    {{- /* SSH known_hosts */}}
+    {{- if .Values.dags.gitSync.sshKnownHosts -}}
+     - name: GIT_KNOWN_HOSTS
       value: "true"
     - name: GIT_SSH_KNOWN_HOSTS_FILE
       value: "/etc/git-secret/known_hosts"
     {{- else }}
     - name: GIT_KNOWN_HOSTS
       value: "false"
-    {{- end }}
+    {{- end -}}
+    {{- /* HTTP authentication */ -}}
     {{- if .Values.dags.gitSync.httpSecret }}
     - name: GIT_SYNC_USERNAME
       valueFrom:
@@ -297,7 +372,9 @@ EXAMPLE USAGE: {{ include "airflow.container.git_sync" (dict "Release" .Release 
         secretKeyRef:
           name: {{ .Values.dags.gitSync.httpSecret }}
           key: {{ .Values.dags.gitSync.httpSecretPasswordKey }}
+    {{- end -}}
     {{- end }}
+
     {{- /* this has user-defined variables, so must be included BELOW (so the ABOVE `env` take precedence) */ -}}
     {{- include "airflow.env" . | indent 4 }}
   volumeMounts:

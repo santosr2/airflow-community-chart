@@ -313,6 +313,7 @@ dags:
 
   ## configs for the git-sync sidecar
   ## [FAQ] https://github.com/santosr2/airflow-community-chart/blob/main/charts/airflow/docs/faq/dags/load-dag-definitions.md
+  ## [NOTE] Chart supports both git-sync v3 and v4 - for v4 migration see: docs/guides/git-sync-v4-migration.md
   gitSync:
     enabled: true
 
