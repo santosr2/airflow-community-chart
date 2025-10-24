@@ -131,7 +131,7 @@ airflow:
   ## - [SECURITY] For production, store in external secret manager and reference via `airflow.extraEnv`
   ## - Generate a secure JWT secret:
   ##   python -c "import secrets; print(secrets.token_urlsafe(32))"
-  ## - Documentation: https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/security/set-jwt-secret.md
+  ## - Documentation: https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/security/set-jwt-secret.md
   ##
   ## NOTE: Auto-generated secrets change on each `helm upgrade`, causing authentication failures
   ##       and restarts of all Airflow components until they pick up the new secret.
@@ -1987,6 +1987,8 @@ dags:
     size: 1Gi
 
   ## configs for the git-sync sidecar (https://github.com/kubernetes/git-sync)
+  ## - NOTE: v4+ is recommended for security updates and performance improvements
+  ## - for migration guide from v3 to v4, see: docs/guides/git-sync-v4-migration.md
   ##
   gitSync:
     ## if the git-sync sidecar container is enabled
@@ -1994,6 +1996,8 @@ dags:
     enabled: false
 
     ## the git-sync container image
+    ## - v3.x.x: uses GIT_SYNC_* environment variables
+    ## - v4.x.x: prefers GITSYNC_* but accepts GIT_SYNC_* for backward compatibility
     ##
     image:
       repository: registry.k8s.io/git-sync/git-sync
@@ -2027,22 +2031,41 @@ dags:
     repoSubPath: ""
 
     ## the git branch to check out
+    ## - NOTE: for git-sync v4+, consider using `ref` instead of `branch` + `revision`
     ##
     branch: master
 
     ## the git revision (tag or hash) to check out
+    ## - NOTE: for git-sync v4+, consider using `ref` instead of `branch` + `revision`
     ##
     revision: HEAD
 
+    ## the git ref to check out (branch, tag, or commit hash)
+    ## - NOTE: git-sync v4+ only
+    ## - when set, this overrides both `branch` and `revision` values
+    ## - examples: "main", "v1.0.0", "abc123def456..."
+    ##
+    ref: ""
+
     ## shallow clone with a history truncated to the specified number of commits
+    ## - NOTE: v4 defaults to 1 (single commit), set to 0 for full history
     ##
     depth: 1
 
     ## the number of seconds between syncs
+    ## - NOTE: deprecated in git-sync v4+, use `period` instead
     ##
     syncWait: 60
 
+    ## the period between syncs (git-sync v4 format)
+    ## - NOTE: git-sync v4+ only, uses Go duration format (e.g., "60s", "1m", "100ms")
+    ## - when set, this overrides `syncWait` value
+    ## - examples: "30s", "1m", "90s"
+    ##
+    period: ""
+
     ## the max number of seconds allowed for a complete sync
+    ## - NOTE: git-sync v4 must use Go duration format (e.g., "120s", "2m")
     ##
     syncTimeout: 120
 
@@ -2086,6 +2109,22 @@ dags:
     ##  - a value of -1 will retry forever after the initial sync
     ##
     maxFailures: 0
+
+    ## enable group-writable permissions on synced files (git-sync v4+)
+    ## - NOTE: git-sync v4+ only
+    ## - replaces the deprecated `--change-permissions` flag from v3
+    ## - when true, makes synced files group-writable
+    ##
+    groupWrite: false
+
+    ## additional git config options (git-sync v4+)
+    ## - NOTE: git-sync v4+ only
+    ## - format: "key1:value1,key2:value2"
+    ##
+    ## ____ EXAMPLE _______________
+    ##   gitConfig: "http.postBuffer:524288000,core.compression:0"
+    ##
+    gitConfig: ""
 
 ###################################
 ## CONFIG | Kubernetes Ingress
@@ -2380,7 +2419,7 @@ pgbouncer:
   ## configs for the pgbouncer container image
   ##
   image:
-    repository: ghcr.io/airflow-helm/pgbouncer
+    repository: ghcr.io/santosr2/pgbouncer
     tag: 1.22.1-patch.0
     pullPolicy: IfNotPresent
     uid: 1001
@@ -2584,7 +2623,7 @@ postgresql:
   ##
   image:
     registry: ghcr.io
-    repository: airflow-helm/postgresql-bitnami
+    repository: santosr2/postgresql-bitnami
     tag: 11.22-patch.0
     pullPolicy: IfNotPresent
 

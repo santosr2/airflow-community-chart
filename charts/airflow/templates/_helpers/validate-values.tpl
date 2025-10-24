@@ -571,3 +571,74 @@
   {{ required "For Airflow <3.0, use `ingress.web` instead of `ingress.apiServer`!" nil }}
   {{- end }}
 {{- end }}
+
+{{/* Checks for git-sync v4-specific values used with v3 */}}
+{{- if .Values.dags.gitSync.enabled }}
+{{- $gitSyncVersion := .Values.dags.gitSync.image.tag | trimPrefix "v" | splitList "." | first }}
+{{- $isV4 := ge (int $gitSyncVersion) 4 }}
+
+{{- if and (not $isV4) .Values.dags.gitSync.ref }}
+###############################################################################
+ERROR: git-sync v3 Configuration Error
+###############################################################################
+You have set `dags.gitSync.ref` but are using git-sync {{ .Values.dags.gitSync.image.tag }}.
+
+The `ref` value is only supported in git-sync v4+.
+
+Please either:
+  1. Update to git-sync v4: dags.gitSync.image.tag=v4.5.0
+  2. Use v3 values: dags.gitSync.branch and dags.gitSync.revision
+
+For more information, see: docs/guides/git-sync-v4-migration.md
+###############################################################################
+{{ required "git-sync v3 does not support the `ref` value!" nil }}
+{{- end }}
+
+{{- if and (not $isV4) .Values.dags.gitSync.period }}
+###############################################################################
+ERROR: git-sync v3 Configuration Error
+###############################################################################
+You have set `dags.gitSync.period` but are using git-sync {{ .Values.dags.gitSync.image.tag }}.
+
+The `period` value is only supported in git-sync v4+.
+
+Please either:
+  1. Update to git-sync v4: dags.gitSync.image.tag=v4.5.0
+  2. Use v3 value: dags.gitSync.syncWait
+
+For more information, see: docs/guides/git-sync-v4-migration.md
+###############################################################################
+{{ required "git-sync v3 does not support the `period` value!" nil }}
+{{- end }}
+
+{{- if and (not $isV4) .Values.dags.gitSync.groupWrite }}
+###############################################################################
+ERROR: git-sync v3 Configuration Error
+###############################################################################
+You have set `dags.gitSync.groupWrite=true` but are using git-sync {{ .Values.dags.gitSync.image.tag }}.
+
+The `groupWrite` value is only supported in git-sync v4+.
+
+Please update to git-sync v4: dags.gitSync.image.tag=v4.5.0
+
+For more information, see: docs/guides/git-sync-v4-migration.md
+###############################################################################
+{{ required "git-sync v3 does not support the `groupWrite` value!" nil }}
+{{- end }}
+
+{{- if and (not $isV4) .Values.dags.gitSync.gitConfig }}
+###############################################################################
+ERROR: git-sync v3 Configuration Error
+###############################################################################
+You have set `dags.gitSync.gitConfig` but are using git-sync {{ .Values.dags.gitSync.image.tag }}.
+
+The `gitConfig` value is only supported in git-sync v4+.
+
+Please update to git-sync v4: dags.gitSync.image.tag=v4.5.0
+
+For more information, see: docs/guides/git-sync-v4-migration.md
+###############################################################################
+{{ required "git-sync v3 does not support the `gitConfig` value!" nil }}
+{{- end }}
+
+{{- end }}

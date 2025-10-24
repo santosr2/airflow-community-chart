@@ -1,0 +1,51 @@
+# Test values for git-sync v3 backward compatibility
+# This file ensures v3 continues to work with the chart
+
+airflow:
+  image:
+    repository: apache/airflow
+    tag: 2.8.4
+
+  executor: KubernetesExecutor
+
+  config:
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+
+dags:
+  # Use git-sync v3 with traditional configuration
+  gitSync:
+    enabled: true
+    image:
+      tag: v3.6.9
+    repo: "https://github.com/apache/airflow.git"
+
+    # v3-style: Use branch and optionally revision (not ref)
+    branch: "2.8.4"
+
+    # v3-style: Use syncWait in seconds (not period)
+    syncWait: 30
+
+    # Shallow clone
+    depth: 1
+
+    # Path to DAGs within the repo
+    repoSubPath: "airflow/example_dags"
+
+scheduler:
+  replicas: 1
+
+web:
+  replicas: 1
+
+workers:
+  enabled: false
+
+flower:
+  enabled: false
+
+postgresql:
+  enabled: true
+
+redis:
+  enabled: false
