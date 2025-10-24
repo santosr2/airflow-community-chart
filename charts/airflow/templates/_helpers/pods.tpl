@@ -280,6 +280,12 @@ EXAMPLE USAGE: {{ include "airflow.container.git_sync" (dict "Release" .Release 
     - name: GITSYNC_PERIOD
       value: {{ .Values.dags.gitSync.period | quote }}
     {{- end -}}
+    {{- /* SSH configuration (auto-detected in v4, explicit in v3) */ -}}
+    {{- if .Values.dags.gitSync.sshSecret }}
+    - name: GITSYNC_SSH_KEY_FILE
+      value: "/etc/git-secret/id_rsa"
+    {{- end -}}
+    {{- /* SSH known_hosts */}}
     {{- if .Values.dags.gitSync.sshKnownHosts }}
     - name: GITSYNC_SSH_KNOWN_HOSTS
       value: "true"
@@ -289,6 +295,7 @@ EXAMPLE USAGE: {{ include "airflow.container.git_sync" (dict "Release" .Release 
     - name: GITSYNC_SSH_KNOWN_HOSTS
       value: "false"
     {{- end -}}
+    {{- /* HTTP authentication */ -}}
     {{- if .Values.dags.gitSync.httpSecret }}
     - name: GITSYNC_USERNAME
       valueFrom:
