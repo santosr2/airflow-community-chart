@@ -2126,6 +2126,163 @@ dags:
     ##
     gitConfig: ""
 
+  ## configs for bucket-sync sidecar (S3)
+  ## - syncs DAG files from cloud storage buckets to the dags folder
+  ## - mutually exclusive with dags.gitSync and dags.persistence
+  ## - supports S3
+  ##
+  bucketSync:
+    ## if the bucket-sync sidecar container is enabled
+    ##
+    enabled: false
+
+    ## the bucket sync provider type
+    ## - allowed values: "s3"
+    ##
+    provider: s3
+
+    ########################################
+    ## S3 Configuration
+    ########################################
+    s3:
+      ## the S3 bucket name (required when provider=s3)
+      ##
+      ## ____ EXAMPLE _______________
+      ##   bucket: "my-airflow-dags"
+      ##
+      bucket: ""
+
+      ## the path within the bucket where DAGs are located
+      ## - only DAGs under this path will be synced
+      ##
+      key: "dags"
+
+      ## AWS region (optional, uses default if not set)
+      ##
+      region: ""
+
+      ## the container image for S3 sync
+      ##
+      image:
+        # This image requires root user to function properly
+        # however, we set the uid/gid to '65533' (non-root) for security purposes
+        # and will use the trick from the link below
+        # https://github.com/aws/aws-cli/issues/5120
+        repository: amazon/aws-cli
+        tag: "2.31.22"
+        pullPolicy: IfNotPresent
+        uid: 65533
+        gid: 65533
+
+      ## additional aws s3 sync flags
+      ## - example: "--exclude '*.pyc' --exclude '__pycache__/*'"
+      ##
+      ## ____ EXAMPLE _______________
+      ##   syncFlags: "--exclude '*.pyc' --exclude '__pycache__/*'"
+      ##
+      syncFlags: ""
+
+      ## AWS credentials (not recommended - use IAM roles instead)
+      ## - for EKS, use serviceAccount.annotations with IAM role (recommended)
+      ## - if set, references a Kubernetes secret with AWS credentials
+      ##
+      ## ____ EXAMPLE _______________
+      ##   # Create secret with: kubectl create secret generic aws-credentials \
+      ##   #   --from-literal=aws_access_key_id=AKIA... \
+      ##   #   --from-literal=aws_secret_access_key=... \
+      ##   #   [--from-literal=aws_session_token=...]
+      ##   credentialsSecret: "aws-credentials"
+      ##
+      credentialsSecret: ""
+
+      ## the key within the credentialsSecret containing the AWS access key ID
+      ## - Used when `credentialsSecret` is set
+      ## - Specifies which key in the Secret contains the AWS access key ID
+      ##
+      credentialsSecretAccessKeyKey: "aws_access_key_id"
+
+      ## the key within the credentialsSecret containing the AWS secret access key
+      ## - Used when `credentialsSecret` is set
+      ## - Specifies which key in the Secret contains the AWS secret access key
+      ##
+      credentialsSecretSecretKeyKey: "aws_secret_access_key"
+
+      ## the key within the credentialsSecret containing the AWS session token
+      ## - OPTIONAL: only needed when using temporary credentials (STS, assumed roles)
+      ## - if not set or key doesn't exist in secret, session token will not be configured
+      ##
+      credentialsSecretSessionTokenKey: "aws_session_token"
+
+      ## [NOT RECOMMENDED] AWS access key ID
+      ## - SECURITY WARNING: Setting credentials directly in values.yaml is INSECURE
+      ## - Exposes credentials in version control and Helm values
+      ## - A security warning will be displayed during deployment
+      ##
+      ## RECOMMENDED ALTERNATIVES:
+      ## 1. IRSA (IAM Roles for Service Accounts) - BEST for EKS:
+      ##    serviceAccount:
+      ##      annotations:
+      ##        eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME"
+      ##
+      ## 2. Kubernetes Secret (credentialsSecret above) - Acceptable alternative
+      ##
+      ## For more info: charts/airflow/docs/faq/dags/load-dag-definitions-from-s3.md
+      ##
+      accessKeyId: ""
+
+      ## [NOT RECOMMENDED] AWS secret access key
+      ## - SECURITY WARNING: Setting credentials directly in values.yaml is INSECURE
+      ## - Exposes credentials in version control and Helm values
+      ## - A security warning will be displayed during deployment
+      ##
+      ## See accessKeyId documentation above for recommended alternatives
+      ##
+      secretAccessKey: ""
+
+      ## [NOT RECOMMENDED] AWS session token
+      ## - SECURITY WARNING: Setting credentials directly in values.yaml is INSECURE
+      ## - Exposes credentials in version control and Helm values
+      ## - A security warning will be displayed during deployment
+      ## - OPTIONAL: only needed for temporary credentials (STS, assumed roles)
+      ##
+      ## Note: Session tokens are automatically provided when using IRSA
+      ## See accessKeyId documentation above for recommended alternatives
+      ##
+      sessionToken: ""
+
+      ## endpoint URL for S3-compatible storage (MinIO, DigitalOcean Spaces, etc.)
+      ##
+      ## ____ EXAMPLE _______________
+      ##   endpoint: "https://minio.example.com"
+      ##
+      endpoint: ""
+
+    ########################################
+    ## Common Configuration
+    ########################################
+
+    ## the sub-path within your bucket where DAGs are located
+    ## - acts as a second-level filter after bucket/key/prefix
+    ## - useful for organizing multiple environments in one bucket
+    ##
+    subPath: ""
+
+    ## the number of seconds between syncs
+    ##
+    syncInterval: 60
+
+    ## resource requests/limits for the bucket-sync container
+    ## - spec for ResourceRequirements:
+    ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core
+    ##
+    resources: {}
+
+    ## the number of consecutive failures allowed before aborting
+    ## - the first sync must succeed
+    ## - a value of -1 will retry forever after the initial sync
+    ##
+    maxFailures: 0
+
 ###################################
 ## CONFIG | Kubernetes Ingress
 ###################################

@@ -158,6 +158,9 @@
   {{- if .Values.dags.persistence.enabled }}
   {{ required "If `dags.gitSync.enabled=true`, then `persistence.enabled` must be disabled!" nil }}
   {{- end }}
+  {{- if .Values.dags.bucketSync.enabled }}
+  {{ required "\n\n###############################################################################\nERROR: Cannot enable both gitSync and bucketSync simultaneously\n###############################################################################\n\nYou have configured:\n  - dags.gitSync.enabled: true\n  - dags.bucketSync.enabled: true\n\nThese features are mutually exclusive because they both sync DAGs to the same\nlocation (/dags/repo), which would cause conflicts and undefined behavior.\n\nPlease choose ONE of the following DAG loading methods:\n  1. Git-sync:       dags.gitSync.enabled: true, dags.bucketSync.enabled: false\n  2. Bucket-sync:    dags.gitSync.enabled: false, dags.bucketSync.enabled: true\n  3. Persistence:    Both disabled, dags.persistence.enabled: true\n  4. Embedded Image: All sync options disabled (DAGs built into image)\n\nSee: charts/airflow/docs/faq/dags/load-dag-definitions.md\n###############################################################################\n" nil }}
+  {{- end }}
   {{- if not .Values.dags.gitSync.repo }}
   {{ required "If `dags.gitSync.enabled=true`, then `dags.gitSync.repo` must be non-empty!" nil }}
   {{- end }}
@@ -166,6 +169,51 @@
   {{- end }}
   {{- if and (.Values.dags.gitSync.repo | lower | hasPrefix "git@github.com") (not .Values.dags.gitSync.sshSecret) }}
   {{ required "You must define `dags.gitSync.sshSecret` when using GitHub with SSH for `dags.gitSync.repo`!" nil }}
+  {{- end }}
+{{- end }}
+
+{{/* Checks for `dags.bucketSync` */}}
+{{- if .Values.dags.bucketSync.enabled }}
+  {{- if .Values.dags.persistence.enabled }}
+  {{ required "If `dags.bucketSync.enabled=true`, then `persistence.enabled` must be disabled!" nil }}
+  {{- end }}
+  {{- if .Values.dags.gitSync.enabled }}
+  {{ required "\n\n###############################################################################\nERROR: Cannot enable both bucketSync and gitSync simultaneously\n###############################################################################\n\nYou have configured:\n  - dags.bucketSync.enabled: true\n  - dags.gitSync.enabled: true\n\nThese features are mutually exclusive because they both sync DAGs to the same\nlocation (/dags/repo), which would cause conflicts and undefined behavior.\n\nPlease choose ONE of the following DAG loading methods:\n  1. Bucket-sync:    dags.bucketSync.enabled: true, dags.gitSync.enabled: false\n  2. Git-sync:       dags.bucketSync.enabled: false, dags.gitSync.enabled: true\n  3. Persistence:    Both disabled, dags.persistence.enabled: true\n  4. Embedded Image: All sync options disabled (DAGs built into image)\n\nSee: charts/airflow/docs/faq/dags/load-dag-definitions.md\n###############################################################################\n" nil }}
+  {{- end }}
+  {{- if not (has .Values.dags.bucketSync.provider (list "s3")) }}
+  {{ required "The `dags.bucketSync.provider` must be one of: [s3]!" nil }}
+  {{- end }}
+  {{- if eq .Values.dags.bucketSync.provider "s3" }}
+    {{- if not .Values.dags.bucketSync.s3.bucket }}
+    {{ required "If `dags.bucketSync.provider=s3`, then `dags.bucketSync.s3.bucket` must be non-empty!" nil }}
+    {{- end }}
+
+    {{- /* Check for authentication configuration */ -}}
+    {{- $hasCredentialsSecret := .Values.dags.bucketSync.s3.credentialsSecret }}
+    {{- $hasInlineCredentials := and .Values.dags.bucketSync.s3.secretAccessKey .Values.dags.bucketSync.s3.accessKeyId }}
+    {{- $hasIRSA := and .Values.serviceAccount.annotations (index .Values.serviceAccount.annotations "eks.amazonaws.com/role-arn") }}
+
+    {{- /* Validate inline credentials are complete */ -}}
+    {{- if .Values.dags.bucketSync.s3.secretAccessKey }}
+      {{- if not .Values.dags.bucketSync.s3.accessKeyId }}
+      {{ required "If `dags.bucketSync.s3.secretAccessKey` is set, then `dags.bucketSync.s3.accessKeyId` must also be set!" nil }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.dags.bucketSync.s3.accessKeyId }}
+      {{- if not .Values.dags.bucketSync.s3.secretAccessKey }}
+      {{ required "If `dags.bucketSync.s3.accessKeyId` is set, then `dags.bucketSync.s3.secretAccessKey` must also be set!" nil }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.dags.bucketSync.s3.sessionToken }}
+      {{- if not (and .Values.dags.bucketSync.s3.accessKeyId .Values.dags.bucketSync.s3.secretAccessKey) }}
+      {{ required "If `dags.bucketSync.s3.sessionToken` is set, then both `dags.bucketSync.s3.accessKeyId` and `dags.bucketSync.s3.secretAccessKey` must also be set!" nil }}
+      {{- end }}
+    {{- end }}
+
+    {{- /* ERROR: No authentication method configured */ -}}
+    {{- if not (or $hasCredentialsSecret $hasInlineCredentials $hasIRSA) }}
+      {{- fail "\n\n================================================================================\nERROR: S3 bucket sync requires authentication!\n\nPlease configure ONE of the following authentication methods:\n\n1. IAM Roles for Service Accounts (IRSA) - RECOMMENDED for EKS:\n   serviceAccount:\n     annotations:\n       eks.amazonaws.com/role-arn: \"arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME\"\n\n2. Kubernetes Secret with AWS credentials:\n   dags:\n     bucketSync:\n       s3:\n         credentialsSecret: \"aws-credentials\"\n         credentialsSecretAccessKeyKey: \"aws_access_key_id\"\n         credentialsSecretSecretKeyKey: \"aws_secret_access_key\"\n\n3. Inline credentials (NOT RECOMMENDED - testing/development only):\n   dags:\n     bucketSync:\n       s3:\n         accessKeyId: \"AKIA...\"\n         secretAccessKey: \"...\"\n         # sessionToken: \"...\"  # Optional, for temporary credentials\n\n   WARNING: Inline credentials are INSECURE and should NEVER be used in production!\n\nFor more information, see: charts/airflow/docs/faq/dags/load-dag-definitions-from-s3.md\n================================================================================\n" }}
+    {{- end }}
   {{- end }}
 {{- end }}
 
@@ -338,6 +386,93 @@
 #      - SAML
 #
 #   See: charts/airflow/docs/faq/security/
+# ###############################################################################
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/* Bucket sync security warnings */}}
+{{- if .Values.dags.bucketSync.enabled }}
+{{- if eq .Values.dags.bucketSync.provider "s3" }}
+{{- $hasCredentialsSecret := .Values.dags.bucketSync.s3.credentialsSecret }}
+{{- $hasInlineCredentials := and .Values.dags.bucketSync.s3.secretAccessKey .Values.dags.bucketSync.s3.accessKeyId }}
+{{- $hasIRSA := and .Values.serviceAccount.annotations (index .Values.serviceAccount.annotations "eks.amazonaws.com/role-arn") }}
+{{- if $hasInlineCredentials }}
+# ###############################################################################
+# WARNING: Using inline S3 credentials (NOT RECOMMENDED)
+# ###############################################################################
+#   You are using inline AWS credentials (dags.bucketSync.s3.accessKeyId,
+#   dags.bucketSync.s3.secretAccessKey, and/or dags.bucketSync.s3.sessionToken)
+#   directly in values.yaml.
+#
+#   SECURITY RISK:
+#   - Credentials are hardcoded in Helm values
+#   - Exposed in version control (Git history)
+#   - Visible in Helm release data
+#   - No automatic rotation
+#
+#   RECOMMENDED ALTERNATIVES:
+#
+#   1. IAM Roles for Service Accounts (IRSA) - BEST for EKS:
+#      serviceAccount:
+#        annotations:
+#          eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME"
+#      dags:
+#        bucketSync:
+#          s3:
+#            # Remove: accessKeyId, secretAccessKey, sessionToken, credentialsSecret
+#
+#   2. Kubernetes Secret - Better than inline:
+#      # Create secret: kubectl create secret generic aws-credentials \
+#      #   --from-literal=aws_access_key_id=AKIA... \
+#      #   --from-literal=aws_secret_access_key=... \
+#      #   --from-literal=aws_session_token=...  # Optional for temp credentials
+#      dags:
+#        bucketSync:
+#          s3:
+#            credentialsSecret: "aws-credentials"
+#            # Remove: accessKeyId, secretAccessKey, sessionToken
+#
+#   Benefits of IRSA:
+#   - No credential storage in Kubernetes
+#   - Automatic credential rotation
+#   - Fine-grained IAM policies
+#   - Better audit trail via CloudTrail
+#
+#   See: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+#   See: charts/airflow/docs/faq/dags/load-dag-definitions-from-s3.md
+# ###############################################################################
+{{- else if and $hasCredentialsSecret (not $hasIRSA) }}
+# ###############################################################################
+# WARNING: Using S3 credentials secret without IRSA
+# ###############################################################################
+#   You are using dags.bucketSync.s3.credentialsSecret to store AWS credentials
+#   in a Kubernetes Secret. While this is more secure than inline credentials,
+#   it is NOT the recommended approach for EKS deployments.
+#
+#   RECOMMENDED ACTION:
+#   For EKS clusters, use IAM Roles for Service Accounts (IRSA) instead:
+#
+#   1. Create an IAM role with S3 read permissions
+#   2. Configure the service account annotation:
+#      serviceAccount:
+#        annotations:
+#          eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME"
+#
+#   3. Remove the credentials secret configuration:
+#      dags:
+#        bucketSync:
+#          s3:
+#            # credentialsSecret: ""  # Remove this line
+#
+#   Benefits of IRSA:
+#   - No credential storage in Kubernetes
+#   - Automatic credential rotation
+#   - Fine-grained IAM policies
+#   - Better audit trail via CloudTrail
+#
+#   See: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+#   See: charts/airflow/docs/faq/dags/load-dag-definitions-from-s3.md
 # ###############################################################################
 {{- end }}
 {{- end }}

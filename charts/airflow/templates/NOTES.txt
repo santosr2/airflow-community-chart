@@ -85,6 +85,24 @@
   {{- end }}
 {{- end }}
 
+{{- /* if we show the S3 inline credentials warning */ -}}
+{{- $s3_inline_credentials_warning := false }}
+{{- if and .Values.dags.bucketSync.enabled (eq .Values.dags.bucketSync.provider "s3") }}
+  {{- if and .Values.dags.bucketSync.s3.accessKeyId .Values.dags.bucketSync.s3.secretAccessKey }}
+  {{- $s3_inline_credentials_warning = true }}
+  {{- end }}
+{{- end }}
+
+{{- /* if we show the default admin credentials warning */ -}}
+{{- $default_admin_credentials_warning := false }}
+{{- if .Values.airflow.users }}
+{{- range $user := .Values.airflow.users }}
+  {{- if and (eq $user.username "admin") (eq $user.password "admin") }}
+  {{- $default_admin_credentials_warning = true }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
 {{- /* if we show the extraPipPackages warning */ -}}
 {{- $extra_pip_warning := false }}
 {{- if .Values.airflow.extraPipPackages }}
@@ -232,7 +250,7 @@ Use these commands to port-forward the Services to your localhost:
 {{- end }}
 {{ end }}
 
-{{- if or ($fernet_key_warning) ($web_secret_warning) ($jwt_secret_warning) ($auth_manager_warning) ($extra_pip_warning) ($embedded_postgres_warning) ($known_host_warning) }}
+{{- if or ($fernet_key_warning) ($web_secret_warning) ($jwt_secret_warning) ($auth_manager_warning) ($external_database_password_warning) ($external_redis_password_warning) ($s3_inline_credentials_warning) ($default_admin_credentials_warning) ($extra_pip_warning) ($embedded_postgres_warning) ($known_host_warning) ($scheduler_livenessProbe_warning) ($scheduler_livenessProbe_taskCreationCheck_warning) }}
 ====================
       WARNINGS
 ====================
@@ -273,6 +291,25 @@ Use these commands to port-forward the Services to your localhost:
 {{- if $external_redis_password_warning }}
 [CRITICAL] external redis password is set using plain-text value!
   * HELP: create a Kubernetes secret with your redis password and configure `externalRedis.passwordSecret`
+{{ end }}
+
+{{- if $s3_inline_credentials_warning }}
+[HIGH] S3 bucket sync is using inline credentials (NOT RECOMMENDED)!
+  * RISK: credentials are hardcoded in Helm values and exposed in version control
+  * HELP: for EKS, use IAM Roles for Service Accounts (IRSA):
+          serviceAccount.annotations."eks.amazonaws.com/role-arn": "arn:aws:iam::ACCOUNT:role/ROLE_NAME"
+  * HELP: for non-EKS, use Kubernetes Secret:
+          dags.bucketSync.s3.credentialsSecret: "aws-credentials"
+  * DOCS: charts/airflow/docs/faq/dags/load-dag-definitions-from-s3.md
+{{ end }}
+
+{{- if $default_admin_credentials_warning }}
+[CRITICAL] using default admin/admin credentials is EXTREMELY INSECURE!
+  * RISK: default credentials are publicly known and can be exploited
+  * HELP: change the password or remove the default admin user:
+          airflow.users[0].password: "<strong-password>"
+  * HELP: for production, use external authentication (LDAP, OAuth, SAML)
+  * DOCS: charts/airflow/docs/faq/security/
 {{ end }}
 
 {{- if $extra_pip_warning }}

@@ -120,11 +120,28 @@ http
 {{- end -}}
 
 {{/*
-The path containing DAG files
+The path containing DAG files.
+- If gitSync is enabled: /dags/repo/<repoSubPath>
+- If bucketSync is enabled: /dags/repo/<subPath>
+- Otherwise: /dags (default, for persistence or embedded DAGs)
+
+NOTE: gitSync and bucketSync are mutually exclusive (enforced by validation)
 */}}
 {{- define "airflow.dags.path" -}}
 {{- if .Values.dags.gitSync.enabled -}}
-{{- printf "%s/repo/%s" (.Values.dags.path | trimSuffix "/") (.Values.dags.gitSync.repoSubPath | trimAll "/") -}}
+{{- $subPath := .Values.dags.gitSync.repoSubPath | default "" | trimAll "/" -}}
+{{- if $subPath -}}
+{{- printf "%s/repo/%s" (.Values.dags.path | trimSuffix "/") $subPath -}}
+{{- else -}}
+{{- printf "%s/repo" (.Values.dags.path | trimSuffix "/") -}}
+{{- end -}}
+{{- else if .Values.dags.bucketSync.enabled -}}
+{{- $subPath := .Values.dags.bucketSync.subPath | default "" | trimAll "/" -}}
+{{- if $subPath -}}
+{{- printf "%s/repo/%s" (.Values.dags.path | trimSuffix "/") $subPath -}}
+{{- else -}}
+{{- printf "%s/repo" (.Values.dags.path | trimSuffix "/") -}}
+{{- end -}}
 {{- else -}}
 {{- printf .Values.dags.path -}}
 {{- end -}}
