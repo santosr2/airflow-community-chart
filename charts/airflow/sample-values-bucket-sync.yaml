@@ -1,0 +1,91 @@
+## Example values file for testing bucket-sync with S3
+## This configuration demonstrates how to use the bucket-sync feature with AWS S3
+##
+## NOTE: This is an example configuration. For actual deployment:
+## - Replace bucket/region with your actual values
+## - Use IAM roles instead of credentials when possible
+## - See docs/faq/dags/load-dag-definitions-from-s3.md for detailed setup
+
+airflow:
+  image:
+    repository: apache/airflow
+    tag: "2.8.4-python3.9"
+
+  executor: CeleryExecutor
+
+  config:
+    AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: "60"
+
+## DAG sync configuration using S3
+dags:
+  bucketSync:
+    enabled: true
+    provider: s3
+
+    s3:
+      ## S3 bucket containing DAG files
+      bucket: "example-airflow-dags"
+
+      ## Path within bucket where DAGs are located
+      key: "dags"
+
+      ## AWS region
+      region: "us-east-1"
+
+      ## AWS CLI image
+      image:
+        repository: amazon/aws-cli
+        tag: "2.31.22"
+        pullPolicy: IfNotPresent
+
+      ## Exclude unnecessary files
+      syncFlags: "--exclude '*.pyc' --exclude '__pycache__/*' --exclude '.git/*'"
+
+      ## Optional: For non-EKS testing with credentials
+      ## Create secret with: kubectl create secret generic aws-credentials \
+      ##   --from-literal=aws_access_key_id=... \
+      ##   --from-literal=aws_secret_access_key=...
+      credentialsSecret: "aws-credentials"
+
+    ## Sync every 60 seconds
+    syncInterval: 60
+
+    ## Resource limits for sync container
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+    ## Allow up to 3 consecutive failures
+    maxFailures: 3
+
+## Optional: Configure ServiceAccount for IAM Roles (EKS)
+## Uncomment for production EKS deployments
+# serviceAccount:
+#   create: true
+#   annotations:
+#     eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/airflow-s3-role"
+
+## Minimal scheduler configuration
+scheduler:
+  replicas: 1
+
+## Workers configuration
+workers:
+  enabled: true
+  replicas: 1
+
+## Disable flower for minimal setup
+flower:
+  enabled: false
+
+## Use embedded PostgreSQL and Redis for testing
+postgresql:
+  enabled: true
+
+redis:
+  enabled: true

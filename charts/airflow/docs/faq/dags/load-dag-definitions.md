@@ -155,7 +155,173 @@ dags:
 
 </details>
 
-## Option 2 - Persistent Volume Claim
+## Option 2 - Bucket-Sync Sidecar
+
+You may store DAG definitions in cloud storage buckets and configure the chart to automatically sync a local copy into each airflow Pod at a regular interval.
+
+> 🟨 __Note__ 🟨
+>
+> Currently supported providers:
+>
+> - __AWS S3__ (and S3-compatible storage like MinIO, DigitalOcean Spaces)
+>
+> Future providers (coming soon):
+>
+> - Google Cloud Storage (GCS)
+> - Azure Blob Storage
+
+> 🟦 __Tip__ 🟦
+>
+> The content of the bucket will be stored at `{dags.path}/repo/`,
+> by default this will be `/opt/airflow/dags/repo/`.
+>
+> If you specify `dags.bucketSync.subPath`, the DAGs folder will be `{dags.path}/repo/{subPath}`.
+
+> 🟨 __Note__ 🟨
+>
+> - Bucket-sync and git-sync are __mutually exclusive__ - you can only enable one at a time
+> - For detailed S3 setup guide, see: [Load DAGs from AWS S3](./load-dag-definitions-from-s3.md)
+
+<details>
+<summary>
+  <a id="s3-example"></a>
+  <b>AWS S3 Example (with IAM roles)</b>
+</summary>
+
+---
+
+The bucket-sync sidecars can access S3 buckets using IAM roles (recommended for EKS) or credentials.
+
+For example, to sync from S3 bucket `my-airflow-dags` with IRSA (IAM Roles for Service Accounts):
+
+```yaml
+serviceAccount:
+  create: true
+  annotations:
+    ## EKS - IAM Roles for Service Accounts (IRSA)
+    ## This automatically provides AWS credentials to all containers in the pod
+    eks.amazonaws.com/role-arn: "arn:aws:iam::XXXXXXXXXX:role/my-airflow-role"
+
+dags:
+  bucketSync:
+    enabled: true
+    provider: s3
+
+    s3:
+      bucket: "my-airflow-dags"
+      key: "dags"  ## Prefix within the bucket
+      region: "us-east-1"
+
+      ## Optional: sync only a subdirectory within the synced content
+      ## DAGs will be at: /opt/airflow/dags/repo/production
+      # subPath: "production"
+
+      ## Optional: exclude files from sync
+      syncFlags: "--exclude '*.pyc' --exclude '__pycache__/*' --exclude '.git/*'"
+
+    ## number of seconds to wait between syncs
+    syncInterval: 60
+
+    ## the number of consecutive failures allowed before aborting
+    maxFailures: 3
+```
+
+> 🟦 __Tip__ 🟦
+>
+> __IRSA__ (IAM Roles for Service Accounts) is the __recommended authentication method__ for EKS:
+>
+> - No credentials stored in Kubernetes
+> - Automatic credential rotation
+> - Fine-grained IAM policies
+> - Better audit trail via CloudTrail
+>
+> The service account annotation automatically injects AWS credentials into ALL containers in the pod,
+> including the bucket-sync sidecar.
+
+</details>
+
+<details>
+<summary>
+  <a id="s3-credentials"></a>
+  <b>S3 with Credentials (not recommended)</b>
+</summary>
+
+---
+
+For non-EKS environments or testing, you can use AWS credentials stored in a Kubernetes Secret:
+
+```yaml
+dags:
+  bucketSync:
+    enabled: true
+    provider: s3
+
+    s3:
+      bucket: "my-airflow-dags"
+      key: "dags"
+      region: "us-east-1"
+      credentialsSecret: "aws-credentials"
+
+    syncInterval: 60
+```
+
+> 🟦 __Tip__ 🟦
+>
+> For permanent IAM user credentials:
+>
+> ```shell
+> kubectl create secret generic \
+>   aws-credentials \
+>   --from-literal=aws_access_key_id='AKIA...' \
+>   --from-literal=aws_secret_access_key='...' \
+>   --namespace my-airflow-namespace
+> ```
+>
+> For temporary credentials (STS, AssumeRole) include the session token:
+>
+> ```shell
+> kubectl create secret generic \
+>   aws-temp-credentials \
+>   --from-literal=aws_access_key_id='ASIAQ...' \
+>   --from-literal=aws_secret_access_key='...' \
+>   --from-literal=aws_session_token='IQoJb3...' \
+>   --namespace my-airflow-namespace
+> ```
+>
+> Then configure: `credentialsSecretSessionTokenKey: "aws_session_token"`
+>
+> See the [S3 DAG loading guide](./load-dag-definitions-from-s3.md) for detailed examples.
+
+</details>
+
+<details>
+<summary>
+  <a id="s3-compatible"></a>
+  <b>S3-Compatible Storage (MinIO, DigitalOcean Spaces, etc.)</b>
+</summary>
+
+---
+
+You can use S3-compatible storage by specifying a custom endpoint:
+
+```yaml
+dags:
+  bucketSync:
+    enabled: true
+    provider: s3
+
+    s3:
+      bucket: "my-airflow-dags"
+      key: "dags"
+      endpoint: "https://minio.example.com"
+      credentialsSecret: "s3-compatible-credentials"
+
+    syncInterval: 60
+```
+
+</details>
+
+## Option 3 - Persistent Volume Claim
 
 You may use a [`PersistentVolumeClaim`](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) to share your DAG definitions across the airflow Pods.
 
@@ -234,7 +400,7 @@ dags:
 
 </details>
 
-## Option 3 - Embedded Into Container Image
+## Option 4 - Embedded Into Container Image
 
 You may embed your DAG files directly into the container image.
 

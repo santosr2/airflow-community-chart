@@ -402,6 +402,133 @@ EXAMPLE USAGE: {{ include "airflow.container.git_sync" (dict "Release" .Release 
 {{- end }}
 
 {{/*
+Define a container which syncs DAGs from cloud storage buckets (S3, GCS, Azure Blob)
+EXAMPLE USAGE: {{ include "airflow.container.bucket_sync" (dict "Release" .Release "Values" .Values "sync_one_time" "false") }}
+*/}}
+{{- define "airflow.container.bucket_sync" }}
+{{- if .sync_one_time }}
+- name: dags-bucket-clone
+{{- else }}
+- name: dags-bucket-sync
+{{- end }}
+{{- if eq .Values.dags.bucketSync.provider "s3" }}
+  image: {{ .Values.dags.bucketSync.s3.image.repository }}:{{ .Values.dags.bucketSync.s3.image.tag }}
+  imagePullPolicy: {{ .Values.dags.bucketSync.s3.image.pullPolicy }}
+  securityContext:
+    runAsUser: {{ .Values.dags.bucketSync.s3.image.uid }}
+    runAsGroup: {{ .Values.dags.bucketSync.s3.image.gid }}
+    {{- if .Values.airflow.defaultContainerSecurityContext }}
+    {{- omit .Values.airflow.defaultContainerSecurityContext "runAsUser" "runAsGroup" | toYaml | nindent 4 }}
+    {{- end }}
+{{- end }}
+  resources:
+    {{- toYaml .Values.dags.bucketSync.resources | nindent 4 }}
+  envFrom:
+    {{- include "airflow.envFrom" . | indent 4 }}
+  env:
+    {{- if eq .Values.dags.bucketSync.provider "s3" }}
+    {{- if and (ne (int .Values.dags.bucketSync.s3.image.uid) 0) (eq .Values.dags.bucketSync.s3.image.repository "amazon/aws-cli") }}
+    # Note: trick used to avoid run the image as root use
+    # see: https://github.com/aws/aws-cli/issues/5120
+    - name: HOME
+      value: /tmp
+    {{- end }}
+    {{- /* S3 credentials - check for inline first (since it's explicitly set), then credentialsSecret */}}
+    {{- if and .Values.dags.bucketSync.s3.accessKeyId .Values.dags.bucketSync.s3.secretAccessKey }}
+    {{- /* Inline credentials (NOT RECOMMENDED - will show security warning) */}}
+    - name: AWS_ACCESS_KEY_ID
+      value: {{ .Values.dags.bucketSync.s3.accessKeyId | quote }}
+    - name: AWS_SECRET_ACCESS_KEY
+      value: {{ .Values.dags.bucketSync.s3.secretAccessKey | quote }}
+    {{- if .Values.dags.bucketSync.s3.sessionToken }}
+    - name: AWS_SESSION_TOKEN
+      value: {{ .Values.dags.bucketSync.s3.sessionToken | quote }}
+    {{- end }}
+    {{- else if .Values.dags.bucketSync.s3.credentialsSecret }}
+    {{- /* Kubernetes Secret with AWS credentials */}}
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Values.dags.bucketSync.s3.credentialsSecret }}
+          key: {{ .Values.dags.bucketSync.s3.credentialsSecretAccessKeyKey }}
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Values.dags.bucketSync.s3.credentialsSecret }}
+          key: {{ .Values.dags.bucketSync.s3.credentialsSecretSecretKeyKey }}
+    {{- if .Values.dags.bucketSync.s3.credentialsSecretSessionTokenKey }}
+    - name: AWS_SESSION_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Values.dags.bucketSync.s3.credentialsSecret }}
+          key: {{ .Values.dags.bucketSync.s3.credentialsSecretSessionTokenKey }}
+          optional: true
+    {{- end }}
+    {{- end }}
+    {{- if .Values.dags.bucketSync.s3.region }}
+    - name: AWS_DEFAULT_REGION
+      value: {{ .Values.dags.bucketSync.s3.region | quote }}
+    {{- end }}
+    {{- end }}
+    {{- /* this has user-defined variables, so must be included BELOW (so the ABOVE `env` take precedence) */ -}}
+    {{- include "airflow.env" . | indent 4 }}
+  command:
+    - "bash"
+    - "-c"
+  args:
+    {{- if eq .Values.dags.bucketSync.provider "s3" }}
+    - |
+      set -euo pipefail
+
+      # Build the S3 URI
+      S3_URI="s3://{{ .Values.dags.bucketSync.s3.bucket }}/{{ .Values.dags.bucketSync.s3.key }}"
+      DEST_PATH="/dags/repo{{ if .Values.dags.bucketSync.subPath }}/{{ .Values.dags.bucketSync.subPath }}{{ end }}"
+      SYNC_FLAGS="{{ .Values.dags.bucketSync.s3.syncFlags }}"
+      {{- if .Values.dags.bucketSync.s3.endpoint }}
+      ENDPOINT_URL="--endpoint-url {{ .Values.dags.bucketSync.s3.endpoint }}"
+      {{- else }}
+      ENDPOINT_URL=""
+      {{- end }}
+
+      echo "[$(date -u +%FT%T.%3N)] Starting S3 sync from ${S3_URI} to ${DEST_PATH}"
+
+      # Initial sync
+      aws s3 sync ${ENDPOINT_URL} ${S3_URI} ${DEST_PATH} --delete ${SYNC_FLAGS} --only-show-errors
+      echo "[$(date -u +%FT%T.%3N)] Initial sync complete"
+
+      {{- if .sync_one_time }}
+      echo "[$(date -u +%FT%T.%3N)] One-time sync complete, exiting"
+      exit 0
+      {{- else }}
+      # Continuous sync loop
+      FAILURE_COUNT=0
+      MAX_FAILURES={{ .Values.dags.bucketSync.maxFailures }}
+
+      while true; do
+        sleep {{ .Values.dags.bucketSync.syncInterval }}
+        echo "[$(date -u +%FT%T.%3N)] Syncing from ${S3_URI}"
+
+        if aws s3 sync ${ENDPOINT_URL} ${S3_URI} ${DEST_PATH} --delete ${SYNC_FLAGS} --only-show-errors; then
+          FAILURE_COUNT=0
+          echo "[$(date -u +%FT%T.%3N)] Sync successful"
+        else
+          FAILURE_COUNT=$((FAILURE_COUNT + 1))
+          echo "[$(date -u +%FT%T.%3N)] Sync failed (failure ${FAILURE_COUNT}/${MAX_FAILURES})"
+
+          if [ ${MAX_FAILURES} -ge 0 ] && [ ${FAILURE_COUNT} -ge ${MAX_FAILURES} ]; then
+            echo "[$(date -u +%FT%T.%3N)] Max failures reached, exiting"
+            exit 1
+          fi
+        fi
+      done
+      {{- end }}
+    {{- end }}
+  volumeMounts:
+    - name: dags-data
+      mountPath: /dags
+{{- end }}
+
+{{/*
 Define a container which regularly deletes airflow logs older than a retention period.
 EXAMPLE USAGE: {{ include "airflow.container.log_cleanup" (dict "Release" .Release "Values" .Values "resources" $lc_resources "retention_min" $lc_retention_min "interval_sec" $lc_interval_sec) }}
 */}}
@@ -485,7 +612,7 @@ EXAMPLE USAGE: {{ include "airflow.volumeMounts" (dict "Release" .Release "Value
   {{- if eq .Values.dags.persistence.accessMode "ReadOnlyMany" }}
   readOnly: true
   {{- end }}
-{{- else if .Values.dags.gitSync.enabled }}
+{{- else if or .Values.dags.gitSync.enabled .Values.dags.bucketSync.enabled }}
 - name: dags-data
   mountPath: {{ .Values.dags.path }}
 {{- end }}
@@ -548,7 +675,7 @@ EXAMPLE USAGE: {{ include "airflow.volumes" (dict "Release" .Release "Values" .V
     {{- else }}
     claimName: {{ printf "%s-dags" (include "airflow.fullname" . | trunc 58) }}
     {{- end }}
-{{- else if .Values.dags.gitSync.enabled }}
+{{- else if or .Values.dags.gitSync.enabled .Values.dags.bucketSync.enabled }}
 - name: dags-data
   emptyDir: {}
 {{- end }}
