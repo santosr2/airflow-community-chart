@@ -1,0 +1,74 @@
+## this values file tests the FAB roles management feature
+##
+
+airflow:
+  image:
+    repository: apache/airflow
+    tag: "2.8.4-python3.9"
+
+  config:
+    AIRFLOW__CORE__LOAD_EXAMPLES: "True"
+
+  ## Define custom FAB roles with permissions (using compact format)
+  roles:
+    - name: DataScientist
+      permissions:
+        # Multiple actions on one resource
+        - actions: [can_read, can_edit, can_create]
+          resource: DAG
+        # One action on multiple resources
+        - action: can_read
+          resources: [DAG Runs, Task Instances, Task Logs]
+        # Single action/resource
+        - action: menu_access
+          resource: Browse
+
+    - name: DataEngineer
+      permissions:
+        # Multiple actions on multiple resources (cartesian product)
+        - actions: [can_read, can_edit]
+          resources: [DAG, Connections, Variables]
+        # Menu access
+        - action: menu_access
+          resources: [Browse, Admin]
+
+  ## Assign custom roles to users
+  users:
+    - username: admin
+      password: admin
+      role: Admin
+      email: admin@example.com
+      firstName: Admin
+      lastName: User
+
+    - username: datascientist
+      password: test123
+      role: DataScientist
+      email: scientist@example.com
+      firstName: Data
+      lastName: Scientist
+
+    - username: dataengineer
+      password: test123
+      role: DataEngineer
+      email: engineer@example.com
+      firstName: Data
+      lastName: Engineer
+
+    - username: multiuser
+      password: test123
+      role:
+        - DataScientist
+        - Viewer
+      email: multi@example.com
+      firstName: Multi
+      lastName: Role
+
+  rolesUpdate: true
+  usersUpdate: true
+
+postgresql:
+  enabled: true
+
+redis:
+  enabled: true

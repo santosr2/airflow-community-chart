@@ -253,6 +253,48 @@ airflow:
   ##
   usersUpdate: true
 
+  ## a list of FAB roles to create or update
+  ## - only works with FAB auth manager (not SimpleAuthManager)
+  ## - each role defines custom RBAC permissions for Airflow resources
+  ## - permissions support both singular and plural forms for actions and resources
+  ## - default FAB roles (Admin, User, Op, Viewer, Public) are always available
+  ##
+  ## Available actions: can_create, can_read, can_edit, can_delete, menu_access
+  ## Available resources: See Airflow FAB documentation for full list
+  ##
+  ## ____ EXAMPLE _______________
+  ##   roles:
+  ##     - name: DataScientist
+  ##       permissions:
+  ##         # Singular forms (one action, one resource)
+  ##         - action: menu_access
+  ##           resource: Browse
+  ##         # Plural actions (multiple actions, one resource)
+  ##         - actions: [can_read, can_edit, can_create]
+  ##           resource: DAG
+  ##         # Plural resources (one action, multiple resources)
+  ##         - action: can_read
+  ##           resources: [Variables, Connections]
+  ##         # Both plural (multiple actions, multiple resources)
+  ##         - actions: [can_read, can_edit]
+  ##           resources: [DAG Runs, Task Instances]
+  ##
+  ##     - name: ReadOnlyMonitor
+  ##       permissions:
+  ##         - action: can_read
+  ##           resources: [DAG, Variables, Connections, Pools]
+  ##         - action: menu_access
+  ##           resources: [Browse, Admin]
+  ##
+  roles: []
+
+  ## if we create a Deployment to perpetually sync `airflow.roles`
+  ## - when `true`, roles are updated in real-time
+  ## - when `true`, role changes from the WebUI will be reverted automatically
+  ## - when `false`, roles will only update one-time, after each `helm upgrade`
+  ##
+  rolesUpdate: true
+
   ## a list airflow connections to create
   ## - templates can ONLY be used in: `host`, `login`, `password`, `schema`, `extra`
   ## - templates used a bash-like syntax: ${AWS_ACCESS_KEY} or $AWS_ACCESS_KEY

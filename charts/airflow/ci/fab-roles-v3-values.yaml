@@ -1,0 +1,81 @@
+## this values file tests the FAB roles management feature
+##
+
+airflow:
+  image:
+    repository: ghcr.io/santosr2/airflow-fab
+    tag: 3.1.0-patch.0
+
+  config:
+    AIRFLOW__CORE__LOAD_EXAMPLES: "True"
+    AIRFLOW__API__AUTH_BACKENDS: "airflow.providers.fab.auth_manager.api.auth.backend.jwt,airflow.providers.fab.auth_manager.api.auth.backend.session,airflow.providers.fab.auth_manager.api.auth.backend.basic_auth"
+    AIRFLOW__CORE__AUTH_MANAGER: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
+
+  ## minimal resources for CI
+  executors: [CeleryExecutor]
+
+  ## Define custom FAB roles with permissions (using compact format)
+  roles:
+    - name: DataScientist
+      permissions:
+        # Multiple actions on one resource
+        - actions: [can_read, can_edit, can_create]
+          resource: DAG
+        # One action on multiple resources
+        - action: can_read
+          resources: [DAG Runs, Task Instances, Task Logs]
+        # Single action/resource
+        - action: menu_access
+          resource: Browse
+
+    - name: DataEngineer
+      permissions:
+        # Multiple actions on multiple resources (cartesian product)
+        - actions: [can_read, can_edit]
+          resources: [DAG, Connections, Variables]
+        # Menu access
+        - action: menu_access
+          resources: [Browse, Admin]
+
+  ## Assign custom roles to users
+  users:
+    - username: admin
+      password: admin
+      role: Admin
+      email: admin@example.com
+      firstName: Admin
+      lastName: User
+
+    - username: datascientist
+      password: test123
+      role: DataScientist
+      email: scientist@example.com
+      firstName: Data
+      lastName: Scientist
+
+    - username: dataengineer
+      password: test123
+      role: DataEngineer
+      email: engineer@example.com
+      firstName: Data
+      lastName: Engineer
+
+    - username: multiuser
+      password: test123
+      role:
+        - DataScientist
+        - Viewer
+      email: multi@example.com
+      firstName: Multi
+      lastName: Role
+
+  rolesUpdate: true
+  usersUpdate: true
+
+## API Server configuration (Airflow 3.0+ component)
+apiServer:
+  replicas: 1
+
+## DAG Processor configuration (Airflow 2.3+ component, required for Airflow 3.0+)
+dagProcessor:
+  enabled: true
