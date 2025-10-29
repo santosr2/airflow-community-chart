@@ -391,6 +391,73 @@
 {{- end }}
 {{- end }}
 
+{{/* Roles validation */}}
+{{- if .Values.airflow.roles }}
+{{- range $role := .Values.airflow.roles }}
+{{- if not $role.name }}
+{{- fail "ERROR: Each role in `airflow.roles` must have a non-empty `name` field!" }}
+{{- end }}
+{{- if $role.permissions }}
+{{- range $perm := $role.permissions }}
+{{- /* Check that either action or actions is provided */ -}}
+{{- if and (not $perm.action) (not $perm.actions) }}
+{{- fail (printf "ERROR: Each permission in role `%s` must have either `action` or `actions` field!" $role.name) }}
+{{- end }}
+{{- /* Check that either resource or resources is provided */ -}}
+{{- if and (not $perm.resource) (not $perm.resources) }}
+{{- fail (printf "ERROR: Each permission in role `%s` must have either `resource` or `resources` field!" $role.name) }}
+{{- end }}
+{{- /* Validate action if singular */ -}}
+{{- if $perm.action }}
+{{- if not (kindIs "string" $perm.action) }}
+{{- fail (printf "ERROR: Field `action` in role `%s` must be a string!" $role.name) }}
+{{- end }}
+{{- if eq $perm.action "" }}
+{{- fail (printf "ERROR: Field `action` in role `%s` must not be empty!" $role.name) }}
+{{- end }}
+{{- end }}
+{{- /* Validate actions if plural */ -}}
+{{- if $perm.actions }}
+{{- if not (kindIs "slice" $perm.actions) }}
+{{- fail (printf "ERROR: Field `actions` in role `%s` must be a list!" $role.name) }}
+{{- end }}
+{{- if eq (len $perm.actions) 0 }}
+{{- fail (printf "ERROR: Field `actions` in role `%s` must not be empty!" $role.name) }}
+{{- end }}
+{{- range $action := $perm.actions }}
+{{- if eq $action "" }}
+{{- fail (printf "ERROR: Field `actions` in role `%s` contains empty values!" $role.name) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- /* Validate resource if singular */ -}}
+{{- if $perm.resource }}
+{{- if not (kindIs "string" $perm.resource) }}
+{{- fail (printf "ERROR: Field `resource` in role `%s` must be a string!" $role.name) }}
+{{- end }}
+{{- if eq $perm.resource "" }}
+{{- fail (printf "ERROR: Field `resource` in role `%s` must not be empty!" $role.name) }}
+{{- end }}
+{{- end }}
+{{- /* Validate resources if plural */ -}}
+{{- if $perm.resources }}
+{{- if not (kindIs "slice" $perm.resources) }}
+{{- fail (printf "ERROR: Field `resources` in role `%s` must be a list!" $role.name) }}
+{{- end }}
+{{- if eq (len $perm.resources) 0 }}
+{{- fail (printf "ERROR: Field `resources` in role `%s` must not be empty!" $role.name) }}
+{{- end }}
+{{- range $resource := $perm.resources }}
+{{- if eq $resource "" }}
+{{- fail (printf "ERROR: Field `resources` in role `%s` contains empty values!" $role.name) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
 {{/* Bucket sync security warnings */}}
 {{- if .Values.dags.bucketSync.enabled }}
 {{- if eq .Values.dags.bucketSync.provider "s3" }}

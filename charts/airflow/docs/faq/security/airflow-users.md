@@ -82,5 +82,12 @@ airflow:
 
 > 🟨 __Note__ 🟨
 >
-> When `airflow.usersUpdate` is `true`, the `airflow.users` which use `airflow.usersTemplates` will be updated in real-time, 
+> When `airflow.usersUpdate` is `true`, the `airflow.users` which use `airflow.usersTemplates` will be updated in real-time,
 > allowing tools like [External Secrets Operator](https://github.com/external-secrets/external-secrets) to be used.
+
+## Related Documentation
+
+- [Manage Airflow FAB Roles](airflow-roles.md) - Define custom RBAC roles and assign to users
+- [Integrate with LDAP or OAuth](ldap-oauth.md) - External authentication setup
+- [Set Airflow Fernet Encryption Key](set-fernet-key.md) - Configure encryption for sensitive data
+- [Airflow 3.0 Migration Guide](../guides/airflow-3-migration.md) - Upgrading to Airflow 3.0
