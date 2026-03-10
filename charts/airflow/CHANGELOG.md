@@ -10,7 +10,7 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 
 > 🟨 __NOTES__ 🟨
 >
-> - this is the first version of the chart with support for **Airflow 3.0 and 3.1** (#1)
+> - this is the first version of the chart with support for **Airflow 3.0 and 3.1** ([#1](https://github.com/santosr2/airflow-community-chart/pull/1))
 > - this version adds support for **Airflow 2.10+** with the new `airflow.executors` configuration
 > - this version adds support for **git-sync v4** with full backward compatibility for v3
 > - the default git-sync image remains `v3.6.9` (v4 can be used by setting `dags.gitSync.image.tag: v4.5.0`)
@@ -23,7 +23,7 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 
 ### Added
 
-- add **Airflow 3.0 and 3.1 support** (#1)
+- add **Airflow 3.0 and 3.1 support** ([#1](https://github.com/santosr2/airflow-community-chart/pull/1))
   - add API Server component (`apiServer.*` values) - replaces webserver in Airflow 3.0+
   - add DAG Processor component (`dagProcessor.*` values) - separates DAG parsing in Airflow 3.0+
   - add JWT secret support for internal API authentication (`airflow.jwtSecret*` values)
@@ -35,7 +35,7 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
   - add [Airflow 3.0 migration guide](./docs/guides/airflow-3-migration.md)
   - add [JWT secret FAQ](./docs/faq/security/set-jwt-secret.md)
   - add CI test configurations for Airflow 2.10, 2.11, 3.0, and 3.1
-- add **git-sync v4 support** with automatic version detection
+- add **git-sync v4 support** with automatic version detection ([#23](https://github.com/santosr2/airflow-community-chart/pull/23))
   - add `dags.gitSync.ref` value for unified git reference (v4+ only) - replaces `branch` + `revision`
   - add `dags.gitSync.period` value for Go duration format sync intervals (v4+ only) - replaces `syncWait`
   - add `dags.gitSync.groupWrite` value to enable group-writable permissions (v4+ only) - replaces deprecated `--change-permissions`
@@ -44,7 +44,7 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
   - add [git-sync v4 migration guide](./docs/guides/git-sync-v4-migration.md)
   - add CI test files for both v3 (`ci/git-sync-v3-compat-values.yaml`) and v4 (`ci/git-sync-v4-values.yaml`)
 - add Airflow 2.10 to supported versions documentation
-- add **bucket-sync support** for loading DAGs from cloud storage (S3, GCS, Azure Blob)
+- add **bucket-sync support** for loading DAGs from cloud storage (S3, GCS, Azure Blob) ([#77](https://github.com/santosr2/airflow-community-chart/pull/77))
   - add `dags.bucketSync.*` configuration section mirroring git-sync structure
   - add support for **AWS S3** with IAM roles or credentials-based authentication
   - add support for **Google Cloud Storage (GCS)** with Workload Identity or service account authentication
@@ -52,7 +52,7 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
   - add automatic sidecar and init container injection for continuous and one-time DAG synchronization
   - add validation to ensure mutual exclusivity with git-sync and persistence methods
   - add S3-compatible storage support (MinIO, DigitalOcean Spaces, etc.) via endpoint configuration
-- add **FAB roles management** feature to declaratively manage custom RBAC roles ([docs](docs/faq/security/airflow-roles.md))
+- add **FAB roles management** feature to declaratively manage custom RBAC roles ([#78](https://github.com/santosr2/airflow-community-chart/pull/78), [docs](docs/faq/security/airflow-roles.md))
   - add `airflow.roles` value to define custom FAB roles with permissions
   - add `airflow.rolesUpdate` value to control continuous sync (Deployment) vs one-time sync (Job)
   - add sync-roles templates (secret, deployment, job) following the sync-users pattern
@@ -65,7 +65,7 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 
 ### Fixed
 
-- fix sync user mechanism when using SimpleAuthManager (Airflow 3.1+) (#13)
+- fix sync user mechanism when using SimpleAuthManager (Airflow 3.1+) ([#13](https://github.com/santosr2/airflow-community-chart/pull/13))
 - fix FAB authentication configuration for Airflow 3.0+ when explicitly enabled
 - fix triggerer script when `triggerer_job` is None
 - fix executor environment variable handling for multiple executors (Airflow 2.10+)
@@ -73,7 +73,7 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 
 ### Documentation
 
-- update `sshKnownHosts` examples to use new GitHub RSA SSH host key (#863)
+- update `sshKnownHosts` examples to use new GitHub RSA SSH host key ([#863](https://github.com/airflow-helm/charts/pull/863))
 - add extensive documentation for Airflow 3.0+ components and configuration
 - add FAQ documentation for JWT secrets and SimpleAuthManager
 
@@ -100,7 +100,7 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 >
 > - this is the first version of the chart with support for airflow 2.9, along with [pretty much all previous versions of airflow](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support)
 > - the default airflow image is now `apache/airflow:2.8.4-python3.9`, but you can still use any supported version of airflow
-> - we have fixed an important bug for airflow <=2.5.3 (introduced in chart version 8.7.1), some liveness probes were creating significant load on the backend database [#853](https://github.com/santosr2/airflow-community-chart/pull/853)
+> - we have fixed an important bug for airflow <=2.5.3 (introduced in chart version 8.7.1), some liveness probes were creating significant load on the backend database [#853](https://github.com/airflow-helm/charts/pull/853)
 
 > 🟦 __OTHER__ 🟦
 >
@@ -170,7 +170,7 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 >
 > - the default airflow image is now `apache/airflow:2.5.3-python3.8`, but you can still use any supported version of airflow, see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support)
 > - when upgrading to airflow 2.5, you may wish to rename your kubernetes `aiflow.config` from `AIRFLOW__KUBERNETES__*` to `AIRFLOW__KUBERNETES_EXECUTOR__*`, as the former was deprecated by airflow 2.5
-> - the chart should no longer be forever "out of sync" in apps like ArgoCD, as this issue was resolved by [#718](https://github.com/santosr2/airflow-community-chart/pull/718)
+> - the chart should no longer be forever "out of sync" in apps like ArgoCD, as this issue was resolved by [#718](https://github.com/airflow-helm/charts/pull/718)
 
 ### Changed
 - the default airflow image is now `apache/airflow:2.5.3-python3.8` (see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support))
@@ -178,17 +178,17 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 - the default pgbouncer image is now `ghcr.io/airflow-helm/pgbouncer:1.18.0-patch.1`
 - the default embedded postgres image is now `ghcr.io/airflow-helm/postgresql-bitnami:11.16-patch.0` (our new [custom image](https://github.com/santosr2/airflow-community-chart/tree/main/images/postgresql-bitnami/11/alpine), with support for ARM64)
 - the default embedded redis image is now `bitnami/redis:5.0.14-debian-10-r173`
-- we now generate self-signed certificates for pgbouncer using a startup script, fixing ArgoCD being forever "out of sync" ([#718](https://github.com/santosr2/airflow-community-chart/pull/718))
+- we now generate self-signed certificates for pgbouncer using a startup script, fixing ArgoCD being forever "out of sync" ([#718](https://github.com/airflow-helm/charts/pull/718))
 
 ### Added
-- feature for automatically changing pool slots on cron schedules ([#649](https://github.com/santosr2/airflow-community-chart/pull/649))
-- ability to disable chart-managed `webserver_config.py` file with `web.webserverConfig.enabled` value ([#631](https://github.com/santosr2/airflow-community-chart/pull/631))
-- added `dags.gitSync.submodules` value ([#620](https://github.com/santosr2/airflow-community-chart/pull/620))
+- feature for automatically changing pool slots on cron schedules ([#649](https://github.com/airflow-helm/charts/pull/649))
+- ability to disable chart-managed `webserver_config.py` file with `web.webserverConfig.enabled` value ([#631](https://github.com/airflow-helm/charts/pull/631))
+- added `dags.gitSync.submodules` value ([#620](https://github.com/airflow-helm/charts/pull/620))
 
 ### Fixed
-- ensure Kubernetes 1.25+ support by updating default api versions for `PodDisruptionBudget` and `HorizontalPodAutoscaler` ([#685](https://github.com/santosr2/airflow-community-chart/pull/685))
-- now also set `kubernetes_executor` airflow configs, as `kubernetes` ones are deprecated ([#719](https://github.com/santosr2/airflow-community-chart/pull/719))
-- fix typo in error message ([#696](https://github.com/santosr2/airflow-community-chart/pull/696))
+- ensure Kubernetes 1.25+ support by updating default api versions for `PodDisruptionBudget` and `HorizontalPodAutoscaler` ([#685](https://github.com/airflow-helm/charts/pull/685))
+- now also set `kubernetes_executor` airflow configs, as `kubernetes` ones are deprecated ([#719](https://github.com/airflow-helm/charts/pull/719))
+- fix typo in error message ([#696](https://github.com/airflow-helm/charts/pull/696))
 
 ## [8.6.1] - 2022-06-22
 
@@ -214,21 +214,21 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 >    - [`bitnami/redis`](https://hub.docker.com/r/bitnami/redis/) → `TBA`
 
 ### Changed
-- update `.helmignore` file to exclude docs ([#593](https://github.com/santosr2/airflow-community-chart/pull/593))
-- require release-name to have <= 40 characters ([#589](https://github.com/santosr2/airflow-community-chart/pull/589))
+- update `.helmignore` file to exclude docs ([#593](https://github.com/airflow-helm/charts/pull/593))
+- require release-name to have <= 40 characters ([#589](https://github.com/airflow-helm/charts/pull/589))
 
 ### Added
-- add `airflow.protectedPipPackages` ([#610](https://github.com/santosr2/airflow-community-chart/pull/610))
-- allow using `extraVolumeMounts` for log storage ([#585](https://github.com/santosr2/airflow-community-chart/pull/585))
-- minimum scheduler age before task-creation-check ([#612](https://github.com/santosr2/airflow-community-chart/pull/612))
+- add `airflow.protectedPipPackages` ([#610](https://github.com/airflow-helm/charts/pull/610))
+- allow using `extraVolumeMounts` for log storage ([#585](https://github.com/airflow-helm/charts/pull/585))
+- minimum scheduler age before task-creation-check ([#612](https://github.com/airflow-helm/charts/pull/612))
 
 ### Fixed
-- fix some breaking changes from airflow 2.3.0 ([#592](https://github.com/santosr2/airflow-community-chart/pull/592)) 
-- fix wait-for-db-migrations in airflow 2.3.0 ([#576](https://github.com/santosr2/airflow-community-chart/pull/576)) 
-- fix pgbouncer liveness probe in minikube ([#560](https://github.com/santosr2/airflow-community-chart/pull/560))
-- use rsync for extraPipPackages ([#599](https://github.com/santosr2/airflow-community-chart/pull/599))
-- set `AIRFLOW__LOGGING__WORKER_LOG_SERVER_PORT` ([#608](https://github.com/santosr2/airflow-community-chart/pull/608))
-- only set `SQLALCHEMY_DATABASE_URI` in airflow 1.10 ([#609](https://github.com/santosr2/airflow-community-chart/pull/609))
+- fix some breaking changes from airflow 2.3.0 ([#592](https://github.com/airflow-helm/charts/pull/592)) 
+- fix wait-for-db-migrations in airflow 2.3.0 ([#576](https://github.com/airflow-helm/charts/pull/576)) 
+- fix pgbouncer liveness probe in minikube ([#560](https://github.com/airflow-helm/charts/pull/560))
+- use rsync for extraPipPackages ([#599](https://github.com/airflow-helm/charts/pull/599))
+- set `AIRFLOW__LOGGING__WORKER_LOG_SERVER_PORT` ([#608](https://github.com/airflow-helm/charts/pull/608))
+- only set `SQLALCHEMY_DATABASE_URI` in airflow 1.10 ([#609](https://github.com/airflow-helm/charts/pull/609))
 
 ## [8.6.0] - 2022-04-13
 
@@ -244,44 +244,44 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 >
 > - Consider enabling the new [Scheduler "task creation check"](docs/faq/monitoring/scheduler-liveness-probe.md#scheduler-task-creation-check) to prevent deadlocks, especially if using airflow versions before `2.1.1`
 > - If you disabled PgBouncer because of incompatibility with "Azure PostgreSQL", you can re-enable it if you [set `pgbouncer.authType = scram-sha-256` and `pgbouncer.serverSSL = verify-ca`](docs/faq/database/pgbouncer.md)
-> - This chart version fixes [an issue that caused `db-migrations` to hang](https://github.com/santosr2/airflow-community-chart/pull/529) when PgBouncer is enabled with airflow `2.2.0+`
+> - This chart version fixes [an issue that caused `db-migrations` to hang](https://github.com/airflow-helm/charts/pull/529) when PgBouncer is enabled with airflow `2.2.0+`
 > - While NOT recommended, you can now set [external database](docs/faq/database/external-database.md) and [external redis](docs/faq/database/external-redis.md) passwords with a plain-text value
 > - If you are using [celery worker autoscaling](docs/faq/configuration/autoscaling-celery-workers.md), you must set a non-empty value for `workers.logCleanup.resources.requests`
 > - The new ["log-cleanup sidecar"](docs/faq/monitoring/log-cleanup.md) is enabled by default on schedulers and workers
-> - The new [PgBouncer startupProbe](https://github.com/santosr2/airflow-community-chart/pull/547) will only work in Kubernetes 1.18+
+> - The new [PgBouncer startupProbe](https://github.com/airflow-helm/charts/pull/547) will only work in Kubernetes 1.18+
 > - The [`extraManifests` value](docs/faq/kubernetes/extra-manifests.md) has been significantly improved
 
 ### Changed
 - the default `airflow.image` is now `apache/airflow:2.2.5-python3.8` (see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support))
-- support helm templating in `extraManifests` by allowing string elements ([docs](docs/faq/kubernetes/extra-manifests.md)) ([#523](https://github.com/santosr2/airflow-community-chart/pull/523))
-- update default `dags.gitSync.image.tag` to `v3.5.0` ([#544](https://github.com/santosr2/airflow-community-chart/pull/544))
-- update default `pgbouncer.image.tag` to `1.17.0-patch.0` ([#552](https://github.com/santosr2/airflow-community-chart/pull/552))
-- update default `pgbouncer.maxClientConnections` to `1000` ([#543](https://github.com/santosr2/airflow-community-chart/pull/543))
+- support helm templating in `extraManifests` by allowing string elements ([docs](docs/faq/kubernetes/extra-manifests.md)) ([#523](https://github.com/airflow-helm/charts/pull/523))
+- update default `dags.gitSync.image.tag` to `v3.5.0` ([#544](https://github.com/airflow-helm/charts/pull/544))
+- update default `pgbouncer.image.tag` to `1.17.0-patch.0` ([#552](https://github.com/airflow-helm/charts/pull/552))
+- update default `pgbouncer.maxClientConnections` to `1000` ([#543](https://github.com/airflow-helm/charts/pull/543))
 
 ### Added
-- add "airflow triggerer" Deployment ([#555](https://github.com/santosr2/airflow-community-chart/pull/555))
-- add "log-cleanup sidecar" to scheduler and worker ([docs](docs/faq/monitoring/log-cleanup.md)) ([#554](https://github.com/santosr2/airflow-community-chart/pull/554))
-- add "task creation check" to scheduler liveness probe ([docs](docs/faq/monitoring/scheduler-liveness-probe.md#scheduler-task-creation-check)) ([#549](https://github.com/santosr2/airflow-community-chart/pull/549))
-- allow setting database passwords with values & setting database usernames from secrets ([docs](docs/faq/database/external-database.md#option-1---postgres)) ([#553](https://github.com/santosr2/airflow-community-chart/pull/553))
-- allow `airflow.users[].roles` to specify a list of roles ([docs](docs/faq/security/airflow-users.md)) ([#539](https://github.com/santosr2/airflow-community-chart/pull/539))
-- add `pgbouncer.authType` value ([docs](docs/faq/database/pgbouncer.md)) ([#498](https://github.com/santosr2/airflow-community-chart/pull/498))
-- add `ingressClassName` values to ingress ([docs](docs/faq/kubernetes/ingress.md)) ([#527](https://github.com/santosr2/airflow-community-chart/pull/527))
-- add `airflow.clusterDomain` value ([#441](https://github.com/santosr2/airflow-community-chart/pull/441))
-- add `labels` values for `sync` and `db-migrations` ([#467](https://github.com/santosr2/airflow-community-chart/pull/467))
-- add `airflow.kubernetesPodTemplate.extraContainers` value ([#456](https://github.com/santosr2/airflow-community-chart/pull/456))
-- add `airflow.kubernetesPodTemplate.extraInitContainers` value ([#446](https://github.com/santosr2/airflow-community-chart/pull/446))
-- add `airflow.kubernetesPodTemplate.shareProcessNamespace` value ([#408](https://github.com/santosr2/airflow-community-chart/pull/408))
-- add `airflow.kubernetesPodTemplate.podLabels` value ([#534](https://github.com/santosr2/airflow-community-chart/pull/534))
+- add "airflow triggerer" Deployment ([#555](https://github.com/airflow-helm/charts/pull/555))
+- add "log-cleanup sidecar" to scheduler and worker ([docs](docs/faq/monitoring/log-cleanup.md)) ([#554](https://github.com/airflow-helm/charts/pull/554))
+- add "task creation check" to scheduler liveness probe ([docs](docs/faq/monitoring/scheduler-liveness-probe.md#scheduler-task-creation-check)) ([#549](https://github.com/airflow-helm/charts/pull/549))
+- allow setting database passwords with values & setting database usernames from secrets ([docs](docs/faq/database/external-database.md#option-1---postgres)) ([#553](https://github.com/airflow-helm/charts/pull/553))
+- allow `airflow.users[].roles` to specify a list of roles ([docs](docs/faq/security/airflow-users.md)) ([#539](https://github.com/airflow-helm/charts/pull/539))
+- add `pgbouncer.authType` value ([docs](docs/faq/database/pgbouncer.md)) ([#498](https://github.com/airflow-helm/charts/pull/498))
+- add `ingressClassName` values to ingress ([docs](docs/faq/kubernetes/ingress.md)) ([#527](https://github.com/airflow-helm/charts/pull/527))
+- add `airflow.clusterDomain` value ([#441](https://github.com/airflow-helm/charts/pull/441))
+- add `labels` values for `sync` and `db-migrations` ([#467](https://github.com/airflow-helm/charts/pull/467))
+- add `airflow.kubernetesPodTemplate.extraContainers` value ([#456](https://github.com/airflow-helm/charts/pull/456))
+- add `airflow.kubernetesPodTemplate.extraInitContainers` value ([#446](https://github.com/airflow-helm/charts/pull/446))
+- add `airflow.kubernetesPodTemplate.shareProcessNamespace` value ([#408](https://github.com/airflow-helm/charts/pull/408))
+- add `airflow.kubernetesPodTemplate.podLabels` value ([#534](https://github.com/airflow-helm/charts/pull/534))
 
 ### Fixed
-- fix `airflow.{fernetKey,webserverSecretKey}` overshadowing `_CMD` and `_SECRET` configs ([docs-1](docs/faq/security/set-fernet-key.md), [docs-2](docs/faq/security/set-webserver-secret-key.md)) ([#508](https://github.com/santosr2/airflow-community-chart/pull/508))
-- fix PG_ADVISORY_LOCK not being released when using pgbouncer ([#529](https://github.com/santosr2/airflow-community-chart/pull/529))
-- only set `CONNECTION_CHECK_MAX_COUNT` once ([#533](https://github.com/santosr2/airflow-community-chart/pull/533))
-- set `DUMB_INIT_SETSID=0` for celery workers (fix warm shutdown) ([#550](https://github.com/santosr2/airflow-community-chart/pull/550))
-- replace pgbouncer readinessProbe with startupProbe ([#547](https://github.com/santosr2/airflow-community-chart/pull/547))
-- allow ingress `servicePort` to be string or number ([#530](https://github.com/santosr2/airflow-community-chart/pull/530))
-- fix `pgbouncer.livenessProbe.enabled` not being respected ([#546](https://github.com/santosr2/airflow-community-chart/pull/546))
-- cast user values with toString before b64enc ([#557](https://github.com/santosr2/airflow-community-chart/pull/557))
+- fix `airflow.{fernetKey,webserverSecretKey}` overshadowing `_CMD` and `_SECRET` configs ([docs-1](docs/faq/security/set-fernet-key.md), [docs-2](docs/faq/security/set-webserver-secret-key.md)) ([#508](https://github.com/airflow-helm/charts/pull/508))
+- fix PG_ADVISORY_LOCK not being released when using pgbouncer ([#529](https://github.com/airflow-helm/charts/pull/529))
+- only set `CONNECTION_CHECK_MAX_COUNT` once ([#533](https://github.com/airflow-helm/charts/pull/533))
+- set `DUMB_INIT_SETSID=0` for celery workers (fix warm shutdown) ([#550](https://github.com/airflow-helm/charts/pull/550))
+- replace pgbouncer readinessProbe with startupProbe ([#547](https://github.com/airflow-helm/charts/pull/547))
+- allow ingress `servicePort` to be string or number ([#530](https://github.com/airflow-helm/charts/pull/530))
+- fix `pgbouncer.livenessProbe.enabled` not being respected ([#546](https://github.com/airflow-helm/charts/pull/546))
+- cast user values with toString before b64enc ([#557](https://github.com/airflow-helm/charts/pull/557))
 
 ## [8.5.3] - 2022-01-10
 
@@ -294,8 +294,8 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 - the default `airflow.image` is now `apache/airflow:2.1.4-python3.8` (see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support))
 
 ### Fixed
-- increase default `timeoutSeconds` for liveness probes ([#496](https://github.com/santosr2/airflow-community-chart/pull/496))
-- typo in `GIT_SYNC_MAX_SYNC_FAILURES` environment variable name ([#462](https://github.com/santosr2/airflow-community-chart/pull/462))
+- increase default `timeoutSeconds` for liveness probes ([#496](https://github.com/airflow-helm/charts/pull/496))
+- typo in `GIT_SYNC_MAX_SYNC_FAILURES` environment variable name ([#462](https://github.com/airflow-helm/charts/pull/462))
 
 ## [8.5.2] - 2021-08-25
 
@@ -304,15 +304,15 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 > - You must stop URL-encoding special characters in `externalDatabase.user`, the chart will now automatically do this for you. For example, don't replace `@` with `%40` anymore.
 
 ### Changed
-- special characters in `externalDatabase.user` are now automatically url-encoded ([#407](https://github.com/santosr2/airflow-community-chart/pull/407))
+- special characters in `externalDatabase.user` are now automatically url-encoded ([#407](https://github.com/airflow-helm/charts/pull/407))
 
 ### Fixed
-- self-signed certificates are now only generated for `client_tls_key_file` and `client_tls_cert_file` PgBouncer configs ([#404](https://github.com/santosr2/airflow-community-chart/pull/404))
-- flower pods are now correctly affected by default: nodeSelector, affinity, tolerations ([#405](https://github.com/santosr2/airflow-community-chart/pull/405))
+- self-signed certificates are now only generated for `client_tls_key_file` and `client_tls_cert_file` PgBouncer configs ([#404](https://github.com/airflow-helm/charts/pull/404))
+- flower pods are now correctly affected by default: nodeSelector, affinity, tolerations ([#405](https://github.com/airflow-helm/charts/pull/405))
 
 ## [8.5.1] - 2021-08-23
 ### Fixed
-- fixed PgBouncer not working if `externalDatabase.database` or `postgresql.postgresqlDatabase` is not `"airflow"` ([#398](https://github.com/santosr2/airflow-community-chart/pull/398))
+- fixed PgBouncer not working if `externalDatabase.database` or `postgresql.postgresqlDatabase` is not `"airflow"` ([#398](https://github.com/airflow-helm/charts/pull/398))
 
 ## [8.5.0] - 2021-08-19
 
@@ -332,42 +332,42 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 
 ### Changed
 - the default `airflow.image` is now `apache/airflow:2.1.2-python3.8` (see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support))
-- the default `airflow.image.gid` is now `0` ([#388](https://github.com/santosr2/airflow-community-chart/pull/388))
-- the Kubernetes Ingress now uses `networking.k8s.io/v1` for `apiVersion` by default ([#381](https://github.com/santosr2/airflow-community-chart/pull/381))
-- we now include git-sync containers in all Deployments ([#390](https://github.com/santosr2/airflow-community-chart/pull/390))
-- we now use the official `/entrypoint` of the airflow container ([#386](https://github.com/santosr2/airflow-community-chart/pull/386))
-- any `airflow.extraPipPackages` are now installed in snyc Jobs/Deployments ([#354](https://github.com/santosr2/airflow-community-chart/pull/354))
-- we now include `airflow.{config,extraEnv}` in the pip-install containers ([#365](https://github.com/santosr2/airflow-community-chart/pull/365))
-- we now include `airflow.{config,extraEnv}` in the git-sync containers ([#380](https://github.com/santosr2/airflow-community-chart/pull/380))
-- we now include `airflow.extraContainers` in the flower Deployment ([#379](https://github.com/santosr2/airflow-community-chart/pull/379))
-- the KubernetesExecutor pod-template now respects the `airflow.image.*` values ([#352](https://github.com/santosr2/airflow-community-chart/pull/352))
-- added values validation for `externalDatabase.type` ([#348](https://github.com/santosr2/airflow-community-chart/pull/348))
+- the default `airflow.image.gid` is now `0` ([#388](https://github.com/airflow-helm/charts/pull/388))
+- the Kubernetes Ingress now uses `networking.k8s.io/v1` for `apiVersion` by default ([#381](https://github.com/airflow-helm/charts/pull/381))
+- we now include git-sync containers in all Deployments ([#390](https://github.com/airflow-helm/charts/pull/390))
+- we now use the official `/entrypoint` of the airflow container ([#386](https://github.com/airflow-helm/charts/pull/386))
+- any `airflow.extraPipPackages` are now installed in snyc Jobs/Deployments ([#354](https://github.com/airflow-helm/charts/pull/354))
+- we now include `airflow.{config,extraEnv}` in the pip-install containers ([#365](https://github.com/airflow-helm/charts/pull/365))
+- we now include `airflow.{config,extraEnv}` in the git-sync containers ([#380](https://github.com/airflow-helm/charts/pull/380))
+- we now include `airflow.extraContainers` in the flower Deployment ([#379](https://github.com/airflow-helm/charts/pull/379))
+- the KubernetesExecutor pod-template now respects the `airflow.image.*` values ([#352](https://github.com/airflow-helm/charts/pull/352))
+- added values validation for `externalDatabase.type` ([#348](https://github.com/airflow-helm/charts/pull/348))
 
 ### Added
-- PgBouncer is now supported (and enabled by default), see the new `pgbouncer.*` values ([#341](https://github.com/santosr2/airflow-community-chart/pull/341), [#330](https://github.com/santosr2/airflow-community-chart/pull/330))
-- created a new Deployment called `db-migrations` to manage airflow database schema upgrades ([#345](https://github.com/santosr2/airflow-community-chart/pull/345))
-- added the `airflow.webserverSecretKey` value with default `"THIS IS UNSAFE!"` ([#346](https://github.com/santosr2/airflow-community-chart/pull/346))
-- added the `airflow.defaultSecurityContext` value with default `{fsGroup: 0}` ([#367](https://github.com/santosr2/airflow-community-chart/pull/367))
-- added `airflow.{defaultNodeSelector,defaultAffinity,defaultTolerations}` values ([#372](https://github.com/santosr2/airflow-community-chart/pull/372))
-- added `airflow.localSettings.*` values to make specifying `airflow_local_settings.py` easier ([#374](https://github.com/santosr2/airflow-community-chart/pull/374))
+- PgBouncer is now supported (and enabled by default), see the new `pgbouncer.*` values ([#341](https://github.com/airflow-helm/charts/pull/341), [#330](https://github.com/airflow-helm/charts/pull/330))
+- created a new Deployment called `db-migrations` to manage airflow database schema upgrades ([#345](https://github.com/airflow-helm/charts/pull/345))
+- added the `airflow.webserverSecretKey` value with default `"THIS IS UNSAFE!"` ([#346](https://github.com/airflow-helm/charts/pull/346))
+- added the `airflow.defaultSecurityContext` value with default `{fsGroup: 0}` ([#367](https://github.com/airflow-helm/charts/pull/367))
+- added `airflow.{defaultNodeSelector,defaultAffinity,defaultTolerations}` values ([#372](https://github.com/airflow-helm/charts/pull/372))
+- added `airflow.localSettings.*` values to make specifying `airflow_local_settings.py` easier ([#374](https://github.com/airflow-helm/charts/pull/374))
 
 ### Fixed
-- fixed the scheduler livenessProbe command ([#351](https://github.com/santosr2/airflow-community-chart/pull/351))
-- made the sync-users deployment close its db connection after each loop ([#320](https://github.com/santosr2/airflow-community-chart/pull/320))
-- stopped using `stringData` in Kubernetes Secrets ([#356](https://github.com/santosr2/airflow-community-chart/pull/356), [#391](https://github.com/santosr2/airflow-community-chart/pull/391))
-- fixed typos in sync/_helpers templates ([#366](https://github.com/santosr2/airflow-community-chart/pull/366), [#387](https://github.com/santosr2/airflow-community-chart/pull/387))
-- always include `airflow.env` last ([#385](https://github.com/santosr2/airflow-community-chart/pull/385))
+- fixed the scheduler livenessProbe command ([#351](https://github.com/airflow-helm/charts/pull/351))
+- made the sync-users deployment close its db connection after each loop ([#320](https://github.com/airflow-helm/charts/pull/320))
+- stopped using `stringData` in Kubernetes Secrets ([#356](https://github.com/airflow-helm/charts/pull/356), [#391](https://github.com/airflow-helm/charts/pull/391))
+- fixed typos in sync/_helpers templates ([#366](https://github.com/airflow-helm/charts/pull/366), [#387](https://github.com/airflow-helm/charts/pull/387))
+- always include `airflow.env` last ([#385](https://github.com/airflow-helm/charts/pull/385))
 
 ### Removed
-- removed the broken `flower.oauthDomains` value ([#383](https://github.com/santosr2/airflow-community-chart/pull/383))
+- removed the broken `flower.oauthDomains` value ([#383](https://github.com/airflow-helm/charts/pull/383))
 
 ### Docs
-- significant rewrite of the post-install NOTES.txt ([#358](https://github.com/santosr2/airflow-community-chart/pull/358))
-- general cleanup of `values.yaml` docstrings ([#389](https://github.com/santosr2/airflow-community-chart/pull/389))
+- significant rewrite of the post-install NOTES.txt ([#358](https://github.com/airflow-helm/charts/pull/358))
+- general cleanup of `values.yaml` docstrings ([#389](https://github.com/airflow-helm/charts/pull/389))
 
 ## [8.4.1] - 2021-07-12
 ### Fixed
-- remove Job dependency on `.Release.Revision` to prevent immutability errors ([#298](https://github.com/santosr2/airflow-community-chart/pull/298))
+- remove Job dependency on `.Release.Revision` to prevent immutability errors ([#298](https://github.com/airflow-helm/charts/pull/298))
    - (important for tools like [argo-cd](https://github.com/argoproj/argo-cd/) which never run `helm install ...`, causing `.Release.Revision` to never be incremented)
 
 ## [8.4.0] - 2021-07-09
@@ -390,20 +390,20 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 - the default `airflow.image` is now `apache/airflow:2.1.1-python3.8` (see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support)) ([#286](https://github.com/santosr2/airflow-community-chart/issues/286))
 - the `Chart.yaml` now explicitly specifies `apiVersion=v2` (requiring helm 3) ([#278](https://github.com/santosr2/airflow-community-chart/issues/278))
 - the `requirements.yaml` file was removed in preference of the `v2` dependencies method (specifying in `Chart.yaml`) ([#278](https://github.com/santosr2/airflow-community-chart/issues/278))
-- git-sync containers are now deployed in webserver, regardless of `airflow.legacyCommands` ([#288](https://github.com/santosr2/airflow-community-chart/pull/288))
-- `wait-for-db-migrations` init-containers now work properly when `airflow.legacyCommands=true` ([#271](https://github.com/santosr2/airflow-community-chart/pull/271))
-- improve validation of `{logs,dags}.persistence.accessMode` ([#269](https://github.com/santosr2/airflow-community-chart/pull/269))
+- git-sync containers are now deployed in webserver, regardless of `airflow.legacyCommands` ([#288](https://github.com/airflow-helm/charts/pull/288))
+- `wait-for-db-migrations` init-containers now work properly when `airflow.legacyCommands=true` ([#271](https://github.com/airflow-helm/charts/pull/271))
+- improve validation of `{logs,dags}.persistence.accessMode` ([#269](https://github.com/airflow-helm/charts/pull/269))
 
 ### Added
-- allow referencing Secrets/ConfigMaps in `airflow.{users,connections,pools,variables}` ([#281](https://github.com/santosr2/airflow-community-chart/pull/281))
-- removed the need for `helmWait` value ([#266](https://github.com/santosr2/airflow-community-chart/pull/266))
+- allow referencing Secrets/ConfigMaps in `airflow.{users,connections,pools,variables}` ([#281](https://github.com/airflow-helm/charts/pull/281))
+- removed the need for `helmWait` value ([#266](https://github.com/airflow-helm/charts/pull/266))
 
 ### Fixed
-- include volumeMounts in init-containers ([#255](https://github.com/santosr2/airflow-community-chart/pull/255))
-- add `release` to worker Service selector ([#267](https://github.com/santosr2/airflow-community-chart/pull/267))
-- mount `dags-data` with `readOnly=true` if `accessMode=ReadOnlyMany` ([#268](https://github.com/santosr2/airflow-community-chart/pull/268))
-- only validate `ingress.{web,flower}.path` if `ingress.enabled=true` ([#270](https://github.com/santosr2/airflow-community-chart/pull/270))
-- multiple Schedulers could run if `legacyCommands=true` (due to rollingUpdate) ([#272](https://github.com/santosr2/airflow-community-chart/pull/272))
+- include volumeMounts in init-containers ([#255](https://github.com/airflow-helm/charts/pull/255))
+- add `release` to worker Service selector ([#267](https://github.com/airflow-helm/charts/pull/267))
+- mount `dags-data` with `readOnly=true` if `accessMode=ReadOnlyMany` ([#268](https://github.com/airflow-helm/charts/pull/268))
+- only validate `ingress.{web,flower}.path` if `ingress.enabled=true` ([#270](https://github.com/airflow-helm/charts/pull/270))
+- multiple Schedulers could run if `legacyCommands=true` (due to rollingUpdate) ([#272](https://github.com/airflow-helm/charts/pull/272))
 
 ## [8.3.2] - 2021-06-30
 ### Docs
