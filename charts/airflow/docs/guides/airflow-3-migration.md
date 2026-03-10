@@ -142,9 +142,9 @@ kubectl exec -it deployment/airflow-scheduler -- airflow db upgrade
 
 # Option 2: Run as a one-time job
 kubectl run airflow-db-upgrade \
-  --image=apache/airflow:3.0.1 \
+  --image=apache/airflow:3.1.0 \
   --restart=Never \
-  --command -- airflow db upgrade
+  --command -- airflow db migrate
 ```
 
 ### Step 4: Upgrade Helm Chart
@@ -451,7 +451,7 @@ kubectl get pods -l component=dag_processor -n airflow
 - [Official Airflow 3.0 Documentation](https://airflow.apache.org/docs/apache-airflow/3.0.0/)
 - [JWT Secret Security Guide](../faq/security/set-jwt-secret.md)
 - [Chart Configuration Guide](../faq/configuration/airflow-configs.md)
-- [Community Support](https://github.com/airflow-helm/charts/discussions)
+- [Community Support](https://github.com/santosr2/airflow-community-chart/discussions)
 
 ---
 
@@ -460,6 +460,6 @@ kubectl get pods -l component=dag_processor -n airflow
 If you encounter issues during migration:
 
 1. Check the [Troubleshooting section](#troubleshooting) above
-2. Search [existing issues](https://github.com/airflow-helm/charts/issues)
-3. Ask in [GitHub Discussions](https://github.com/airflow-helm/charts/discussions)
+2. Search [existing issues](https://github.com/santosr2/airflow-community-chart/issues)
+3. Ask in [GitHub Discussions](https://github.com/santosr2/airflow-community-chart/discussions)
 4. Review [official Airflow documentation](https://airflow.apache.org/docs/)

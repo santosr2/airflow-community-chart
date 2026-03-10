@@ -1,4 +1,4 @@
-name: "test charts"
+name: "Test Charts"
 
 on:
   pull_request:
@@ -15,6 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.head_ref }}
 
       - name: Install Helm
         uses: azure/setup-helm@v4.2.0

@@ -75,16 +75,18 @@
     {{- if not (has $executor (list "CeleryExecutor" "KubernetesExecutor")) }}
       {{ required (printf "The `airflow.executors` list can only contain: [CeleryExecutor, KubernetesExecutor]! Found: %s" $executor) nil }}
     {{- end -}}
-    {{- if eq $executor "CeleryExecutor" -}}
-      {{- if not $.Values.workers.enabled }}
-      {{ required (printf "If `airflow.executors` contains `%s`, then `workers.enabled` should be `true`!" $executor) nil }}
-      {{- end }}
+  {{- end -}}
+  {{- $hasCelery := has "CeleryExecutor" .Values.airflow.executors -}}
+  {{- $hasK8s := has "KubernetesExecutor" .Values.airflow.executors -}}
+  {{- if $hasCelery -}}
+    {{- if not $.Values.workers.enabled }}
+    {{ required "If `airflow.executors` contains `CeleryExecutor`, then `workers.enabled` should be `true`!" nil }}
     {{- end }}
-    {{- if eq $executor "KubernetesExecutor" }}
-      {{- if or ($.Values.workers.enabled) ($.Values.flower.enabled) ($.Values.redis.enabled) }}
-      {{ required "If `airflow.executors` contains `KubernetesExecutor`, then all of [`workers.enabled`, `flower.enabled`, `redis.enabled`] should be `false`!" nil }}
-      {{- end }}
-    {{- end -}}
+  {{- end }}
+  {{- if and $hasK8s (not $hasCelery) }}
+    {{- if or ($.Values.workers.enabled) ($.Values.flower.enabled) ($.Values.redis.enabled) }}
+    {{ required "If `airflow.executors` contains ONLY `KubernetesExecutor` (without `CeleryExecutor`), then all of [`workers.enabled`, `flower.enabled`, `redis.enabled`] should be `false`!" nil }}
+    {{- end }}
   {{- end -}}
 {{- end }}
 

@@ -1,4 +1,4 @@
-name: "release charts"
+name: "Release Charts"
 
 on:
   push:
@@ -6,31 +6,137 @@ on:
       - main
     paths:
       - "charts/*/Chart.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
+    name: Release Helm Charts
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+        uses: ./.github/actions/setup-git
 
-      - name: Install Helm
-        uses: azure/setup-helm@v4.2.0
+      - name: Setup Helm Environment
+        uses: ./.github/actions/setup-helm
         with:
-          version: v3.13.3
+          helm-version: v3.14.4
+          add-dependency-repos: 'false'
 
-      - name: Add Helm Dependency Repos
+      - name: Update chart dependencies
         run: |
-          helm repo add stable https://charts.helm.sh/stable
+          for chart_dir in charts/*/; do
+            if [ -f "${chart_dir}Chart.yaml" ]; then
+              echo "Updating dependencies for ${chart_dir}"
+              helm dependency update "${chart_dir}"
+            fi
+          done
 
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.6.0
+        uses: helm/chart-releaser-action@v1.7.0
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CR_SKIP_EXISTING: true
+          CR_GENERATE_RELEASE_NOTES: true
+        with:
+          charts_dir: charts
+          skip_existing: true
+          mark_as_latest: true
+
+      - name: Generate SBOM for released charts
+        if: success()
+        uses: anchore/sbom-action@v0.20.6
+        with:
+          path: charts/
+          format: spdx-json
+          output-file: charts-sbom.spdx.json
+          upload-artifact: true
+          upload-release-assets: true
+
+      - name: Scan released charts for vulnerabilities
+        if: success()
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: 'fs'
+          scan-ref: 'charts/'
+          format: 'sarif'
+          output: 'trivy-charts-release.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload scan results
+        if: success()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: 'trivy-charts-release.sarif'
+          category: 'helm-charts-release'
+
+  update-index:
+    name: Update Helm Repository Index
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v5
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Setup Helm Environment
+        uses: ./.github/actions/setup-helm
+
+      - name: Verify index.yaml
+        run: |
+          if [ -f index.yaml ]; then
+            echo "Helm repository index exists"
+            helm repo index . --url https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }} --merge index.yaml
+          else
+            echo "Creating new Helm repository index"
+            helm repo index . --url https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          fi
+
+      - name: Commit updated index
+        uses: ./.github/actions/setup-git
+
+      - name: Push changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git add index.yaml
+            git commit --signoff -m "chore: update Helm repository index"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+
+  notify:
+    name: Notify Release
+    needs: [release, update-index]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create release summary
+        run: |
+          echo "## Helm Charts Released Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The Helm charts have been released and the repository index has been updated." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Installation" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "helm repo add ${{ github.event.repository.name }} https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "helm repo update" >> $GITHUB_STEP_SUMMARY
+          echo "helm search repo ${{ github.event.repository.name }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

@@ -15,7 +15,7 @@ airflow:
     AIRFLOW__CORE__AUTH_MANAGER: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
 
   ## minimal resources for CI
-  executors: [CeleryExecutor]
+  executors: [CeleryExecutor, KubernetesExecutor]
 
 ## API Server configuration (Airflow 3.0+ component)
 apiServer:

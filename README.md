@@ -24,6 +24,18 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/santosr2/airflow-community-chart/actions/workflows/charts--run-tests.yaml">
+    <img alt="Test Charts" src="https://img.shields.io/github/actions/workflow/status/santosr2/airflow-community-chart/charts--run-tests.yaml?branch=main&style=flat-square&label=tests&logo=github">
+  </a>
+  <a href="https://github.com/santosr2/airflow-community-chart/actions/workflows/charts--release.yaml">
+    <img alt="Release Charts" src="https://img.shields.io/github/actions/workflow/status/santosr2/airflow-community-chart/charts--release.yaml?branch=main&style=flat-square&label=release&logo=github">
+  </a>
+  <a href="https://github.com/santosr2/airflow-community-chart/actions/workflows/security-scan.yaml">
+    <img alt="Security Scan" src="https://img.shields.io/github/actions/workflow/status/santosr2/airflow-community-chart/security-scan.yaml?branch=main&style=flat-square&label=security&logo=github">
+  </a>
+</p>
+
+<p align="center">
   <a href="https://github.com/santosr2/airflow-community-chart/stargazers">
     <img alt="GitHub Stars" src="https://img.shields.io/github/stars/santosr2/airflow-community-chart?style=for-the-badge&color=ffcb2f&label=Support%20with%20%E2%AD%90%20on%20GitHub">
   </a>

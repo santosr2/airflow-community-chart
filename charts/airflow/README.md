@@ -9,17 +9,17 @@ Originally created in 2017, it has since helped thousands of companies create pr
 <br>
 
 <p>
-  <a href="https://github.com/airflow-helm/charts/releases">
-    <img alt="Downloads" src="https://img.shields.io/github/downloads/airflow-helm/charts/total?style=flat-square&color=28a745">
+  <a href="https://github.com/santosr2/airflow-community-chart/releases">
+    <img alt="Downloads" src="https://img.shields.io/github/downloads/santosr2/airflow-community-chart/total?style=flat-square&color=28a745">
   </a>
-  <a href="https://github.com/airflow-helm/charts/graphs/contributors">
-    <img alt="Contributors" src="https://img.shields.io/github/contributors/airflow-helm/charts?style=flat-square&color=28a745">
+  <a href="https://github.com/santosr2/airflow-community-chart/graphs/contributors">
+    <img alt="Contributors" src="https://img.shields.io/github/contributors/santosr2/airflow-community-chart?style=flat-square&color=28a745">
   </a>
-  <a href="https://github.com/airflow-helm/charts/blob/main/LICENSE">
-    <img alt="License" src="https://img.shields.io/github/license/airflow-helm/charts?style=flat-square&color=28a745">
+  <a href="https://github.com/santosr2/airflow-community-chart/blob/main/LICENSE">
+    <img alt="License" src="https://img.shields.io/github/license/santosr2/airflow-community-chart?style=flat-square&color=28a745">
   </a>
-  <a href="https://github.com/airflow-helm/charts/releases">
-    <img alt="Latest Release" src="https://img.shields.io/github/v/release/airflow-helm/charts?style=flat-square&color=6f42c1&label=latest%20release">
+  <a href="https://github.com/santosr2/airflow-community-chart/releases">
+    <img alt="Latest Release" src="https://img.shields.io/github/v/release/santosr2/airflow-community-chart?style=flat-square&color=6f42c1&label=latest%20release">
   </a>
   <a href="https://artifacthub.io/packages/helm/airflow-helm/airflow">
     <img alt="ArtifactHub" src="https://img.shields.io/static/v1?style=flat-square&color=417598&logo=artifacthub&label=ArtifactHub&message=airflow-helm">
@@ -27,8 +27,8 @@ Originally created in 2017, it has since helped thousands of companies create pr
 </p>
 
 <p>
-  <a href="https://github.com/airflow-helm/charts/stargazers">
-    <img alt="GitHub Stars" src="https://img.shields.io/github/stars/airflow-helm/charts?style=for-the-badge&color=ffcb2f&label=Support%20with%20%E2%AD%90%20on%20GitHub">
+  <a href="https://github.com/santosr2/airflow-community-chart/stargazers">
+    <img alt="GitHub Stars" src="https://img.shields.io/github/stars/santosr2/airflow-community-chart?style=for-the-badge&color=ffcb2f&label=Support%20with%20%E2%AD%90%20on%20GitHub">
   </a>
   <a href="https://artifacthub.io/packages/helm/airflow-helm/airflow">
     <img alt="ArtifactHub Stars" src="https://img.shields.io/badge/dynamic/json?style=for-the-badge&color=ffcb2f&label=Support%20with%20%E2%AD%90%20on%20ArtifactHub&query=stars&url=https://artifacthub.io/api/v1/packages/af52c9e8-afa6-4443-952f-3d4d17e3be35/stars">
@@ -36,11 +36,11 @@ Originally created in 2017, it has since helped thousands of companies create pr
 </p>
 
 <p>
-  <a href="https://github.com/airflow-helm/charts/discussions">
-    <img alt="GitHub Discussions" src="https://img.shields.io/github/discussions/airflow-helm/charts?style=for-the-badge&color=17a2b8&label=Start%20a%20Discussion">
+  <a href="https://github.com/santosr2/airflow-community-chart/discussions">
+    <img alt="GitHub Discussions" src="https://img.shields.io/github/discussions/santosr2/airflow-community-chart?style=for-the-badge&color=17a2b8&label=Start%20a%20Discussion">
   </a>
-  <a href="https://github.com/airflow-helm/charts/issues/new/choose">
-    <img alt="GitHub Issues" src="https://img.shields.io/github/issues/airflow-helm/charts?style=for-the-badge&color=17a2b8&label=Open%20an%20Issue">
+  <a href="https://github.com/santosr2/airflow-community-chart/issues/new/choose">
+    <img alt="GitHub Issues" src="https://img.shields.io/github/issues/santosr2/airflow-community-chart?style=for-the-badge&color=17a2b8&label=Open%20an%20Issue">
   </a>
 </p>
 
@@ -56,32 +56,34 @@ Originally created in 2017, it has since helped thousands of companies create pr
 ## Key Features
 
 - __Support for Airflow Versions:__
-   - [`1.10` | `2.0` | `2.1` | `2.2` | `2.3` | `2.4` | `2.5` | `2.6` | `2.7` | `2.8` | `2.9` | `2.10`](#airflow-version-support)
+   - [`1.10` | `2.0` | `2.1` | `2.2` | `2.3` | `2.4` | `2.5` | `2.6` | `2.7` | `2.8` | `2.9` | `2.10` | `3.0` | `3.1`](#airflow-version-support)
 - __Support for Airflow Executors:__ 
    - [`CeleryExecutor` | `KubernetesExecutor` | `CeleryKubernetesExecutor`](#airflow-executor-support)
 - __Easily Connect with your Database:__
-   - [`Connect to Postgres`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/database/external-database.md#option-1---postgres) |
-     [`Configure PgBouncer`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/database/pgbouncer.md) |
-     [`Connect to MySQL`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/database/external-database.md#option-2---mysql)
+   - [`Connect to Postgres`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/database/external-database.md#option-1---postgres) |
+     [`Configure PgBouncer`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/database/pgbouncer.md) |
+     [`Connect to MySQL`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/database/external-database.md#option-2---mysql)
 - __Declaratively Manage Airflow Configs:__
-   - [`Users`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/security/airflow-users.md) |
-     [`Connections`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/dags/airflow-connections.md) |
-     [`Variables`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/dags/airflow-variables.md) |
-     [`Pools`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/dags/airflow-pools.md)
+   - [`Users`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/security/airflow-users.md) |
+     [`Connections`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/dags/airflow-connections.md) |
+     [`Variables`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/dags/airflow-variables.md) |
+     [`Pools`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/dags/airflow-pools.md)
 - __Load Airflow DAGs:__
-   - [`Load from Git-Sync`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/dags/load-dag-definitions.md#option-1---git-sync-sidecar) |
-     [`Load from Volume`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/dags/load-dag-definitions.md#option-2---persistent-volume-claim) |
-     [`Embed Into Image`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/dags/load-dag-definitions.md#option-3---embedded-into-container-image)
+   - [`Load from Git-Sync`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/dags/load-dag-definitions.md#option-1---git-sync-sidecar) |
+     [`Load from Bucket-Sync (S3/GCS/Azure)`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/dags/load-dag-definitions.md#option-2---bucket-sync-sidecar) |
+     [`Load from Volume`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/dags/load-dag-definitions.md#option-3---persistent-volume-claim) |
+     [`Embed Into Image`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/dags/load-dag-definitions.md#option-4---embedded-into-container-image) |
+     [`Centralized Sync`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/dags/centralized-sync.md)
 - __Manage Airflow Logs:__
-   - [`Persist on Volume`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/monitoring/log-persistence.md#option-1---persistent-volume-claim) |
-     [`Persist on Remote Provider`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/monitoring/log-persistence.md#option-2---remote-providers) |
-     [`Automatic Log Cleanup`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/monitoring/log-cleanup.md)
+   - [`Persist on Volume`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/monitoring/log-persistence.md#option-1---persistent-volume-claim) |
+     [`Persist on Remote Provider`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/monitoring/log-persistence.md#option-2---remote-providers) |
+     [`Automatic Log Cleanup`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/monitoring/log-cleanup.md)
 - __Install Extra Python Packages:__
-   - [`Install with Init-Containers`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/configuration/extra-python-packages.md#option-1---init-containers) |
-     [`Embed Into Image`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/configuration/extra-python-packages.md#option-2---embedded-into-container-image)
+   - [`Install with Init-Containers`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/configuration/extra-python-packages.md#option-1---init-containers) |
+     [`Embed Into Image`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/configuration/extra-python-packages.md#option-2---embedded-into-container-image)
 - __Automatically Restart Unhealthy Airflow Schedulers:__
-   - [`Heartbeat Check`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/monitoring/scheduler-liveness-probe.md#scheduler-heartbeat-check) |
-     [`Task Creation Check`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/monitoring/scheduler-liveness-probe.md#scheduler-task-creation-check)
+   - [`Heartbeat Check`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/monitoring/scheduler-liveness-probe.md#scheduler-heartbeat-check) |
+     [`Task Creation Check`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/monitoring/scheduler-liveness-probe.md#scheduler-task-creation-check)
 
 ## History
 
@@ -91,7 +93,7 @@ Here is a brief overview of the chart's development from 2017 until today:
 
 - From October 2017 until December 2018, the chart was called `kube-airflow` and was developed in [`gsemet/kube-airflow`](https://github.com/gsemet/kube-airflow)
 - From December 2018 until November 2020, the chart was called `stable/airflow` and was developed in [`helm/charts`](https://github.com/helm/charts/tree/master/stable/airflow)
-- Since November 2020, the chart has been called `Airflow Helm Chart (User Community)` and is developed in `airflow-helm/charts`
+- Since November 2020, the chart has been called `Airflow Helm Chart (User Community)` and is developed in `santosr2/airflow-community-chart`
 
 > Please note, this chart is __independent__ from the official chart in the `apache/airflow` repo, which was forked from Astronomer's proprietary chart in May 2021.
 
@@ -99,66 +101,76 @@ Here is a brief overview of the chart's development from 2017 until today:
 
 ## Guides
 
-#### [`Quickstart Guide`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/guides/quickstart.md) <sup><sub>⭐</sub></sup> <a id="quickstart-guide"></a>
+#### [`Quickstart Guide`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/guides/quickstart.md) <sup><sub>⭐</sub></sup> <a id="quickstart-guide"></a>
 
-#### [`Upgrade Guide`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/guides/upgrade.md) <sup><sub>⭐</sub></sup> <a id="upgrade"></a>
+#### [`Upgrade Guide`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/guides/upgrade.md) <sup><sub>⭐</sub></sup> <a id="upgrade"></a>
 
-#### [`Uninstall Guide`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/guides/uninstall.md) <a id="uninstall"></a>
+#### [`Airflow 3 migration Guide`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/guides/airflow-3-migration.md) <sup><sub>⭐</sub></sup> <a id="airflow-3-migration"></a>
+
+#### [`Uninstall Guide`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/guides/uninstall.md) <a id="uninstall"></a>
 
 ## Frequently Asked Questions
 
 - __Configuration:__
-  - [`Set Airflow Version`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/configuration/airflow-version.md) <sup><sub>⭐</sub></sup> <a id="how-to-use-a-specific-version-of-airflow"></a>
-  - [`Manage Airflow Configs`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/configuration/airflow-configs.md) <sup><sub>⭐</sub></sup> <a id="how-to-set-airflow-configs"></a>
-  - [`Manage Airflow Plugins`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/configuration/airflow-plugins.md)
-  - [`Install Extra Python/Pip Packages`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/configuration/extra-python-packages.md) <a id="how-to-install-extra-pip-packages"></a>
-  - [`Configure Celery Worker Autoscaling`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/configuration/autoscaling-celery-workers.md) <a id="how-to-set-up-celery-worker-autoscaling"></a>
+  - [`Set Airflow Version`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/configuration/airflow-version.md) <sup><sub>⭐</sub></sup> <a id="how-to-use-a-specific-version-of-airflow"></a>
+  - [`Manage Airflow Configs`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/configuration/airflow-configs.md) <sup><sub>⭐</sub></sup> <a id="how-to-set-airflow-configs"></a>
+  - [`Manage Airflow Plugins`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/configuration/airflow-plugins.md)
+  - [`Install Extra Python/Pip Packages`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/configuration/extra-python-packages.md) <a id="how-to-install-extra-pip-packages"></a>
+  - [`Configure Resource Management and Sizing`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/configuration/resource-management.md) <sup><sub>⭐</sub></sup>
+  - [`Configure Celery Worker Autoscaling`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/configuration/autoscaling-celery-workers.md) <a id="how-to-set-up-celery-worker-autoscaling"></a>
 - __DAGs:__
-  - [`Load Airflow DAGs`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/dags/load-dag-definitions.md) <sup><sub>⭐</sub></sup> <a id="how-to-store-dags"></a>
-  - [`Manage Airflow Connections`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/dags/airflow-connections.md) <sup><sub>⭐</sub></sup> <a id="how-to-create-airflow-connections"></a>
-  - [`Manage Airflow Variables`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/dags/airflow-variables.md) <a id="how-to-create-airflow-variables"></a>
-  - [`Manage Airflow Pools`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/dags/airflow-pools.md) <a id="how-to-create-airflow-pools"></a>
+  - [`Load Airflow DAGs`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/dags/load-dag-definitions.md) <sup><sub>⭐</sub></sup> <a id="how-to-store-dags"></a>
+  - [`Manage Airflow Connections`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/dags/airflow-connections.md) <sup><sub>⭐</sub></sup> <a id="how-to-create-airflow-connections"></a>
+  - [`Manage Airflow Variables`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/dags/airflow-variables.md) <a id="how-to-create-airflow-variables"></a>
+  - [`Manage Airflow Pools`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/dags/airflow-pools.md) <a id="how-to-create-airflow-pools"></a>
 - __Security:__
-  - [`Manage Airflow Users`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/security/airflow-users.md) <sup><sub>⭐</sub></sup> <a id="how-to-create-airflow-users"></a>
-  - [`Integrate Airflow with LDAP or OAUTH`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/security/ldap-oauth.md) <a id="how-to-authenticate-airflow-users-with-ldapoauth"></a>
-  - [`Set Airflow Fernet Encryption Key`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/security/set-fernet-key.md) <a id="how-to-set-a-custom-fernet-encryption-key"></a>
-  - [`Set Airflow Webserver Secret Key`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/security/set-webserver-secret-key.md) <a id="how-to-set-a-custom-webserver-secret_key"></a>
+  - [`Manage Airflow Users`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/security/airflow-users.md) <sup><sub>⭐</sub></sup> <a id="how-to-create-airflow-users"></a>
+  - [`Manage Airflow FAB Roles`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/security/airflow-roles.md) <a id="how-to-create-airflow-roles"></a>
+  - [`Integrate Airflow with LDAP or OAUTH`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/security/ldap-oauth.md) <a id="how-to-authenticate-airflow-users-with-ldapoauth"></a>
+  - [`Set Airflow Fernet Encryption Key`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/security/set-fernet-key.md) <a id="how-to-set-a-custom-fernet-encryption-key"></a>
+  - [`Set Airflow Webserver/API Secret Key`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/security/set-webserver-secret-key.md) <a id="how-to-set-a-custom-webserver-secret_key"></a>
+  - [`Configure JWT Token`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/security/set-jwt-secret.md) <a id="how-to-set-up-jwt-token"></a>
 - __Monitoring:__
-  - [`Manage Airflow Logs`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/monitoring/log-persistence.md) <sup><sub>⭐</sub></sup> <a id="how-to-persist-airflow-logs"></a>
-  - [`Manage Airflow Logs Cleanup`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/monitoring/log-cleanup.md)
-  - [`Configure Scheduler Liveness Probe`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/monitoring/scheduler-liveness-probe.md) <a id="how-to-configure-the-scheduler-liveness-probe"></a>
-  - [`Integrate Airflow with Prometheus`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/monitoring/prometheus.md) <a id="how-to-integrate-airflow-with-prometheus"></a>
+  - [`Manage Airflow Logs`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/monitoring/log-persistence.md) <sup><sub>⭐</sub></sup> <a id="how-to-persist-airflow-logs"></a>
+  - [`Manage Airflow Logs Cleanup`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/monitoring/log-cleanup.md)
+  - [`Configure Scheduler Liveness Probe`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/monitoring/scheduler-liveness-probe.md) <a id="how-to-configure-the-scheduler-liveness-probe"></a>
+  - [`Integrate Airflow with Prometheus`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/monitoring/prometheus.md) <a id="how-to-integrate-airflow-with-prometheus"></a>
 - __Databases:__
-  - [`Configure Database (Built-In)`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/database/embedded-database.md) <a id="how-to-use-the-embedded-postgres"></a>
-  - [`Configure Database (External)`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/database/external-database.md) <sup><sub>⭐</sub></sup> <a id="how-to-use-an-external-database"></a>
-  - [`Configure PgBouncer`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/database/pgbouncer.md)
-  - [`Configure Redis (Built-In)`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/database/embedded-redis.md)
-  - [`Configure Redis (External)`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/database/external-redis.md) <sup><sub>⭐</sub></sup> <a id="how-to-use-an-external-redis"></a>
+  - [`Configure Database (Built-In)`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/database/embedded-database.md) <a id="how-to-use-the-embedded-postgres"></a>
+  - [`Configure Database (External)`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/database/external-database.md) <sup><sub>⭐</sub></sup> <a id="how-to-use-an-external-database"></a>
+  - [`Configure PgBouncer`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/database/pgbouncer.md)
+  - [`Configure Redis (Built-In)`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/database/embedded-redis.md)
+  - [`Configure Redis (External)`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/database/external-redis.md) <sup><sub>⭐</sub></sup> <a id="how-to-use-an-external-redis"></a>
 - __Kubernetes:__
-  - [`Configure Kubernetes Ingress`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/kubernetes/ingress.md) <sup><sub>⭐</sub></sup> <a id="how-to-set-up-an-ingress"></a>
-  - [`Mount Extra Persistent Volumes`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/kubernetes/mount-persistent-volumes.md) <sup><sub>⭐</sub></sup>
-  - [`Mount Files from Secrets/ConfigMaps`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/kubernetes/mount-files.md) <a id="how-to-mount-secretsconfigmaps-as-files-on-workers"></a>
-  - [`Mount Environment Variables from Secrets/ConfigMaps`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/kubernetes/mount-environment-variables.md) <a id="how-to-create-airflow-variables"></a>
-  - [`Configure Pod Affinity, Selectors, Tolerations, TopologySpreadConstraints`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/kubernetes/affinity-node-selectors-tolerations.md) <a id="how-to-use-pod-affinity-nodeselector-and-tolerations"></a>
-  - [`Include Extra Kubernetes Manifests`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/kubernetes/extra-manifests.md) <a id="how-to-add-extra-manifests"></a>
+  - [`Configure Kubernetes Ingress`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/kubernetes/ingress.md) <sup><sub>⭐</sub></sup> <a id="how-to-set-up-an-ingress"></a>
+  - [`Mount Extra Persistent Volumes`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/kubernetes/mount-persistent-volumes.md) <sup><sub>⭐</sub></sup>
+  - [`Mount Files from Secrets/ConfigMaps`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/kubernetes/mount-files.md) <a id="how-to-mount-secretsconfigmaps-as-files-on-workers"></a>
+  - [`Mount Environment Variables from Secrets/ConfigMaps`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/kubernetes/mount-environment-variables.md) <a id="how-to-create-airflow-variables"></a>
+  - [`Configure Pod Affinity, Selectors, Tolerations, TopologySpreadConstraints`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/kubernetes/affinity-node-selectors-tolerations.md) <a id="how-to-use-pod-affinity-nodeselector-and-tolerations"></a>
+  - [`Include Extra Kubernetes Manifests`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/kubernetes/extra-manifests.md) <a id="how-to-add-extra-manifests"></a>
 
 ## Examples
 
-- __Custom Values Starting Points:__
+- __Production Values:__
+  - [`Production-Ready Values`](values-production.yaml) <sup><sub>⭐</sub></sup> - Production starting point with security, HA, and resource limits
+- __Custom Values Starting Points (Airflow 2.x):__
   - [`CeleryExecutor`](sample-values-CeleryExecutor.yaml)
   - [`KubernetesExecutor`](sample-values-KubernetesExecutor.yaml)
-  - [`CeleryKubernetesExecutor`](sample-values-CeleryKubernetesExecutor.yaml)
+  - [`CeleryKubernetesExecutor (Airflow <3)`](sample-values-CeleryKubernetesExecutor.yaml)
+- __Custom Values Starting Points (Airflow 3.x):__
+  - [`CeleryExecutor (Airflow 3.x)`](sample-values-CeleryExecutor-v3.yaml)
+  - [`KubernetesExecutor (Airflow 3.x)`](sample-values-KubernetesExecutor-v3.yaml)
 - __Real-World Examples:__
-  - [`Minikube / Kind / K3D`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/examples/minikube)
-  - [`Google Kubernetes Engine (GKE)`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/examples/google-gke)
+  - [`Minikube / Kind / K3D`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/examples/minikube)
+  - [`Google Kubernetes Engine (GKE)`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/examples/google-gke)
 
 <br>
 
 ## Airflow Version Support
 
-The following table lists the __airflow versions__ supported by this chart (set the version with [`airflow.image.tag`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/docs/faq/configuration/airflow-version.md) value).
+The following table lists the __airflow versions__ supported by this chart (set the version with [`airflow.image.tag`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/faq/configuration/airflow-version.md) value).
 
-Chart Version → <br> Airflow Version ↓  | `7.0.0` - `7.16.0` | `8.0.0` - `8.5.3` | `8.6.0` | `8.6.1` - `8.7.0` | `8.7.1` | `8.8.0` | `8.9.0+`
+Chart Version → <br> Airflow Version ↓  | `7.0.0` - `7.16.0` | `8.0.0` - `8.5.3` | `8.6.0` | `8.6.1` - `8.7.0` | `8.7.1` | `8.8.0` | `8.9.0` | `9.0.0+`
 --- | --- | --- | --- | --- | --- | --- | ---
 `1.10.X` | ✔️ | ✔️ <sub>[1]</sub> | ✔️️ <sub>[1]</sub> | ✔️️ <sub>[1]</sub> | ✔️️ <sub>[1]</sub> | ✔️️ <sub>[1]</sub> | ✔️️ <sub>[1]</sub>
 `2.0.X` | ❌ | ✔️ | ✔️ | ✔️ | ✔️️ | ✔️️ | ✔️️
@@ -172,28 +184,33 @@ Chart Version → <br> Airflow Version ↓  | `7.0.0` - `7.16.0` | `8.0.0` - `8.
 `2.8.X` | ❌ | ❌ | ❌ | ❌ | ❌ | ✔️️ | ✔️️
 `2.9.X` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌️ | ✔️️
 `2.10.X` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌️ | ⚠️ <sub>[3]</sub>
+`3.0.X` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌️ | ✔️️ <sub>[4]</sub>
+`3.1.X` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌️ | ✔️️ <sub>[4]</sub>
 
 <sub>[1] you must set `airflow.legacyCommands = true` when using airflow version `1.10.X`</sub>
 <br>
 <sub>[2] the [Deferrable Operators & Triggers](https://airflow.apache.org/docs/apache-airflow/stable/concepts/deferring.html) feature won't work, as there is no `airflow triggerer` Deployment</sub>
 <br>
 <sub>[3] airflow version `2.10.1` has a [serious issue](https://github.com/apache/airflow/issues/42111) with git-sync, use `2.10.2` or later</sub>
+<br>
+<sub>[4] airflow 3.0+ requires `airflow.jwtSecret` to be set, and uses API Server + DAG Processor instead of Webserver - see the [Airflow 3.0 Migration Guide](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/docs/guides/airflow-3-migration.md)</sub>
 
 ## Airflow Executor Support
 
 The following table lists the [__airflow executors__](https://airflow.apache.org/docs/apache-airflow/stable/executor/index.html) supported by this chart (set by `airflow.executor` value).
 
-Chart Version → <br> Airflow Executor ↓ | `7.X.X` | `8.X.X` | 
+Chart Version → <br> Airflow Executor ↓ | `7.X.X` | `8.X.X` |
 --- | --- | ---
 `CeleryExecutor` | ✔️ | ✔️
 `KubernetesExecutor` | ⚠️️ <sub>[1]</sub> | ✔️
-`CeleryKubernetesExecutor` | ❌ | ✔️
+`CeleryKubernetesExecutor` | ❌ | ✔️ <sub>[2]</sub>
 
 <sub>[1] we encourage you to use chart version `8.X.X`, so you can use the `airflow.kubernetesPodTemplate.*` values (requires airflow `1.10.11+`) </sub>
+<sub>[2] `CeleryKubernetesExecutor` is deprecated in Airflow `3.X.X` in favor of multiple executors</sub>
 
 ## Helm Values
 
-The following is a summary of the __helm values__ provided by this chart (see full list in [`values.yaml`](https://github.com/airflow-helm/charts/tree/main/charts/airflow/values.yaml) file).
+The following is a summary of the __helm values__ provided by this chart (see full list in [`values.yaml`](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow/values.yaml) file).
 
 > click the `▶` symbol to expand
 
@@ -205,12 +222,20 @@ Parameter | Description | Default
 `airflow.legacyCommands` | if we use legacy 1.10 airflow commands | `false`
 `airflow.image.*` | configs for the airflow container image | `<see values.yaml>`
 `airflow.executor` | the airflow executor type to use | `CeleryExecutor`
+`airflow.executors` | the airflow executor type list to use (Airflow +2.3) | `""`
 `airflow.fernetKey` | the fernet encryption key (sets `AIRFLOW__CORE__FERNET_KEY`) | `7T512UXSSmBOkpWimFHIVb8jK6lfmSAvx4mO6Arehnc=`
 `airflow.webserverSecretKey` | the secret_key for flask (sets `AIRFLOW__WEBSERVER__SECRET_KEY`) | `THIS IS UNSAFE!`
+`airflow.apiSecretKey` | the secret_key for API (sets `AIRFLOW__API__SECRET_KEY`) | `null`
+`airflow.jwtSecret` | the JWT secret for Airflow 3.0+ internal API authentication | `""`
+`airflow.jwtSecretName` | the name of an existing Kubernetes Secret containing the JWT secret (takes precedence over `jwtSecret`) | `""`
+`airflow.jwtSecretKey` | the key within the Kubernetes Secret that contains the JWT secret value (used with `jwtSecretName`) | `""`
+`airflow.jwtSecretAnnotations` | annotations for the auto-generated JWT secret (only when `jwtSecretName` is NOT set) | `{}`
 `airflow.config` | environment variables for airflow configs | `{}`
 `airflow.users` | a list of users to create | `<see values.yaml>`
 `airflow.usersTemplates` | bash-like templates to be used in `airflow.users` | `<see values.yaml>`
 `airflow.usersUpdate` | if we create a Deployment to perpetually sync `airflow.users` | `true`
+`airflow.roles` | a list of FAB roles to create or update | `[]`
+`airflow.rolesUpdate` | if we create a Deployment to perpetually sync `airflow.roles` | `true`
 `airflow.connections` | a list airflow connections to create | `<see values.yaml>`
 `airflow.connectionsTemplates` | bash-like templates to be used in `airflow.connections` | `<see values.yaml>`
 `airflow.connectionsUpdate` | if we create a Deployment to perpetually sync `airflow.connections` | `true`
@@ -299,6 +324,66 @@ Parameter | Description | Default
 `web.extraInitContainers` | extra init-containers for the web Pods | `[]`
 `web.extraVolumeMounts` | extra VolumeMounts for the web Pods | `[]`
 `web.extraVolumes` | extra Volumes for the web Pods | `[]`
+
+</details>
+
+<details>
+<summary><code>apiServer.*</code> (Airflow 3.0+)</summary>
+
+Parameter | Description | Default
+--- | --- | ---
+`apiServer.webserverConfig.*` | configs to generate webserver_config.py | `<see values.yaml>`
+`apiServer.replicas` | the number of API Server Pods to run | `1`
+`apiServer.resources` | resource requests/limits for the API Server Pods | `{}`
+`apiServer.nodeSelector` | the nodeSelector configs for the API Server Pods | `{}`
+`apiServer.affinity` | the affinity configs for the API Server Pods | `{}`
+`apiServer.tolerations` | the toleration configs for the API Server Pods | `[]`
+`apiServer.topologySpreadConstraints` | the topologySpreadConstraints configs for the API Server Pods | `[]`
+`apiServer.securityContext` | the security context for the API Server Pods | `{}`
+`apiServer.labels` | labels for the API Server Deployment | `{}`
+`apiServer.podLabels` | Pod labels for the API Server Deployment | `{}`
+`apiServer.annotations` | annotations for the API Server Deployment | `{}`
+`apiServer.podAnnotations` | Pod annotations for the API Server Deployment | `{}`
+`apiServer.safeToEvict` | if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true" | `true`
+`apiServer.podDisruptionBudget.*` | configs for the PodDisruptionBudget of the API Server Deployment | `<see values.yaml>`
+`apiServer.service.*` | configs for the Service of the API Server pods | `<see values.yaml>`
+`apiServer.readinessProbe.*` | configs for the API Server Pods' readiness probe | `<see values.yaml>`
+`apiServer.livenessProbe.*` | configs for the API Server Pods' liveness probe | `<see values.yaml>`
+`apiServer.extraPipPackages` | extra pip packages to install in the API Server Pods | `[]`
+`apiServer.extraContainers` | extra containers for the API Server Pods | `[]`
+`apiServer.extraInitContainers` | extra init-containers for the API Server Pods | `[]`
+`apiServer.extraVolumeMounts` | extra VolumeMounts for the API Server Pods | `[]`
+`apiServer.extraVolumes` | extra Volumes for the API Server Pods | `[]`
+
+</details>
+
+<details>
+<summary><code>dagProcessor.*</code> (Airflow 3.0+)</summary>
+
+Parameter | Description | Default
+--- | --- | ---
+`dagProcessor.enabled` | if the DAG Processor Deployment should be created (Airflow 3.0+) | `false`
+`dagProcessor.webserverConfig.*` | configs to generate webserver_config.py | `<see values.yaml>`
+`dagProcessor.replicas` | the number of DAG Processor Pods to run | `1`
+`dagProcessor.resources` | resource requests/limits for the DAG Processor Pods | `{}`
+`dagProcessor.nodeSelector` | the nodeSelector configs for the DAG Processor Pods | `{}`
+`dagProcessor.affinity` | the affinity configs for the DAG Processor Pods | `{}`
+`dagProcessor.tolerations` | the toleration configs for the DAG Processor Pods | `[]`
+`dagProcessor.topologySpreadConstraints` | the topologySpreadConstraints configs for the DAG Processor Pods | `[]`
+`dagProcessor.securityContext` | the security context for the DAG Processor Pods | `{}`
+`dagProcessor.labels` | labels for the DAG Processor Deployment | `{}`
+`dagProcessor.podLabels` | Pod labels for the DAG Processor Deployment | `{}`
+`dagProcessor.annotations` | annotations for the DAG Processor Deployment | `{}`
+`dagProcessor.podAnnotations` | Pod annotations for the DAG Processor Deployment | `{}`
+`dagProcessor.safeToEvict` | if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true" | `true`
+`dagProcessor.podDisruptionBudget.*` | configs for the PodDisruptionBudget of the DAG Processor Deployment | `<see values.yaml>`
+`dagProcessor.service.*` | configs for the Service of the DAG Processor pods | `<see values.yaml>`
+`dagProcessor.livenessProbe.*` | configs for the DAG Processor Pods' liveness probe | `<see values.yaml>`
+`dagProcessor.extraPipPackages` | extra pip packages to install in the DAG Processor Pods | `[]`
+`dagProcessor.extraContainers` | extra containers for the DAG Processor Pods | `[]`
+`dagProcessor.extraInitContainers` | extra init-containers for the DAG Processor Pods | `[]`
+`dagProcessor.extraVolumeMounts` | extra VolumeMounts for the DAG Processor Pods | `[]`
+`dagProcessor.extraVolumes` | extra Volumes for the DAG Processor Pods | `[]`
 
 </details>
 
@@ -408,8 +493,45 @@ Parameter | Description | Default
 Parameter | Description | Default
 --- | --- | ---
 `dags.path` | the airflow dags folder | `/opt/airflow/dags`
+`dags.syncMode` | the sync mode for DAGs (`sidecar`, `centralized`, or `disabled`) | `sidecar`
+`dags.centralizedPath.git` | subdirectory for git-synced DAGs in centralized mode | `git`
+`dags.centralizedPath.bucket` | subdirectory for bucket-synced DAGs in centralized mode | `bucket`
 `dags.persistence.*` | configs for the dags PVC | `<see values.yaml>`
-`dags.gitSync.*` | configs for the git-sync sidecar  | `<see values.yaml>`
+`dags.gitSync.*` | configs for the git-sync sidecar (supports v3 & v4, see [migration guide](./docs/guides/git-sync-v4-migration.md)) | `<see values.yaml>`
+`dags.bucketSync.*` | configs for the bucket-sync sidecar (supports S3, GCS, Azure Blob, see [docs](./docs/faq/dags/load-dag-definitions.md#option-2---bucket-sync-sidecar)) | `<see values.yaml>`
+
+</details>
+
+<details>
+<summary><code>plugins.*</code></summary>
+
+Parameter | Description | Default
+--- | --- | ---
+`plugins.path` | the airflow plugins folder | `/opt/airflow/plugins`
+`plugins.syncMode` | the sync mode for plugins (`sidecar`, `centralized`, or `disabled`) | `sidecar`
+`plugins.centralizedPath.git` | subdirectory for git-synced plugins in centralized mode | `git`
+`plugins.centralizedPath.bucket` | subdirectory for bucket-synced plugins in centralized mode | `bucket`
+`plugins.persistence.*` | configs for the plugins PVC | `<see values.yaml>`
+`plugins.gitSync.*` | configs for the git-sync sidecar for plugins | `<see values.yaml>`
+`plugins.bucketSync.*` | configs for the bucket-sync sidecar for plugins | `<see values.yaml>`
+
+</details>
+
+<details>
+<summary><code>sync.*</code></summary>
+
+Parameter | Description | Default
+--- | --- | ---
+`sync.dags.enabled` | if we deploy a centralized DAG sync Deployment | `false`
+`sync.dags.replicas` | the number of replicas for the centralized DAG sync Deployment | `1`
+`sync.dags.persistence.*` | configs for the centralized DAG sync PVC | `<see values.yaml>`
+`sync.dags.gitSync.*` | configs for git-sync in centralized DAG sync (inherits from `dags.gitSync`) | `<see values.yaml>`
+`sync.dags.bucketSync.*` | configs for bucket-sync in centralized DAG sync (inherits from `dags.bucketSync`) | `<see values.yaml>`
+`sync.plugins.enabled` | if we deploy a centralized plugins sync Deployment | `false`
+`sync.plugins.replicas` | the number of replicas for the centralized plugins sync Deployment | `1`
+`sync.plugins.persistence.*` | configs for the centralized plugins sync PVC | `<see values.yaml>`
+`sync.plugins.gitSync.*` | configs for git-sync in centralized plugins sync (inherits from `plugins.gitSync`) | `<see values.yaml>`
+`sync.plugins.bucketSync.*` | configs for bucket-sync in centralized plugins sync (inherits from `plugins.bucketSync`) | `<see values.yaml>`
 
 </details>
 
@@ -576,5 +698,23 @@ Parameter | Description | Default
 `prometheusRule.enabled` | if the PrometheusRule resources should be deployed | `false`
 `prometheusRule.additionalLabels` | labels for PrometheusRule, so that Prometheus can select it | `{}`
 `prometheusRule.groups` | alerting rules for Prometheus | `[]`
+
+</details>
+
+<details>
+<summary><code>networkPolicies.*</code></summary>
+
+Parameter | Description | Default
+--- | --- | ---
+`networkPolicies.enabled` | if NetworkPolicy resources should be deployed (requires CNI that supports NetworkPolicy) | `false`
+`networkPolicies.scheduler.additionalEgressRules` | additional egress rules for scheduler NetworkPolicy | `[]`
+`networkPolicies.webserver.additionalIngressRules` | additional ingress rules for webserver NetworkPolicy (Airflow 2.x) | `[]`
+`networkPolicies.webserver.additionalEgressRules` | additional egress rules for webserver NetworkPolicy (Airflow 2.x) | `[]`
+`networkPolicies.apiServer.additionalIngressRules` | additional ingress rules for API server NetworkPolicy (Airflow 3.x) | `[]`
+`networkPolicies.apiServer.additionalEgressRules` | additional egress rules for API server NetworkPolicy (Airflow 3.x) | `[]`
+`networkPolicies.dagProcessor.additionalEgressRules` | additional egress rules for DAG processor NetworkPolicy (Airflow 3.x) | `[]`
+`networkPolicies.workers.additionalIngressRules` | additional ingress rules for workers NetworkPolicy | `[]`
+`networkPolicies.workers.additionalEgressRules` | additional egress rules for workers NetworkPolicy | `[]`
+`networkPolicies.triggerer.additionalEgressRules` | additional egress rules for triggerer NetworkPolicy | `[]`
 
 </details>
