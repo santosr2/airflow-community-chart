@@ -45,3 +45,5 @@ Sessionx.vim
 /ci
 /docs
 /examples
+
+*.bkp

@@ -6,24 +6,110 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 
 ## [Unreleased]
 
-TBD
+## [8.10.0] - 2026-03-10
+
+> 🟨 __NOTES__ 🟨
+>
+> - this is the first version of the chart with support for **Airflow 3.0 and 3.1** ([#1](https://github.com/santosr2/airflow-community-chart/pull/1))
+> - this version adds support for **Airflow 2.10+** with the new `airflow.executors` configuration
+> - this version adds support for **git-sync v4** with full backward compatibility for v3
+> - the default git-sync image remains `v3.6.9` (v4 can be used by setting `dags.gitSync.image.tag: v4.5.0`)
+> - see the [Airflow 3.0 migration guide](./docs/guides/airflow-3-migration.md) for details on upgrading to Airflow 3
+> - see the [git-sync v4 migration guide](./docs/guides/git-sync-v4-migration.md) for details on new git-sync v4 features
+
+### Changed
+
+- the default embedded redis image is now `bitnami-legacy/redis:6.2.14-debian-11-r16` (moved from bitnami to bitnami-legacy)
+
+### Added
+
+- add **Airflow 3.0 and 3.1 support** ([#1](https://github.com/santosr2/airflow-community-chart/pull/1))
+  - add API Server component (`apiServer.*` values) - replaces webserver in Airflow 3.0+
+  - add DAG Processor component (`dagProcessor.*` values) - separates DAG parsing in Airflow 3.0+
+  - add JWT secret support for internal API authentication (`airflow.jwtSecret*` values)
+  - add `airflow.executors` value for multiple executor support (Airflow 2.10+)
+  - add `airflow.apiSecretKey` value for API secret key configuration
+  - add automatic JWT secret generation when not provided (for Airflow 3.0+)
+  - add automatic SimpleAuthManager user configuration via environment variables (Airflow 3.1+)
+  - add comprehensive validation for Airflow 3.0+ requirements and configuration
+  - add [Airflow 3.0 migration guide](./docs/guides/airflow-3-migration.md)
+  - add [JWT secret FAQ](./docs/faq/security/set-jwt-secret.md)
+  - add CI test configurations for Airflow 2.10, 2.11, 3.0, and 3.1
+- add **git-sync v4 support** with automatic version detection ([#23](https://github.com/santosr2/airflow-community-chart/pull/23))
+  - add `dags.gitSync.ref` value for unified git reference (v4+ only) - replaces `branch` + `revision`
+  - add `dags.gitSync.period` value for Go duration format sync intervals (v4+ only) - replaces `syncWait`
+  - add `dags.gitSync.groupWrite` value to enable group-writable permissions (v4+ only) - replaces deprecated `--change-permissions`
+  - add `dags.gitSync.gitConfig` value for additional git config options (v4+ only)
+  - add validation to prevent v4-specific values from being used with v3 images
+  - add [git-sync v4 migration guide](./docs/guides/git-sync-v4-migration.md)
+  - add CI test files for both v3 (`ci/git-sync-v3-compat-values.yaml`) and v4 (`ci/git-sync-v4-values.yaml`)
+- add Airflow 2.10 to supported versions documentation
+- add **bucket-sync support** for loading DAGs from cloud storage (S3, GCS, Azure Blob) ([#77](https://github.com/santosr2/airflow-community-chart/pull/77))
+  - add `dags.bucketSync.*` configuration section mirroring git-sync structure
+  - add support for **AWS S3** with IAM roles or credentials-based authentication
+  - add support for **Google Cloud Storage (GCS)** with Workload Identity or service account authentication
+  - add support for **Azure Blob Storage** with Managed Identity or connection string authentication
+  - add automatic sidecar and init container injection for continuous and one-time DAG synchronization
+  - add validation to ensure mutual exclusivity with git-sync and persistence methods
+  - add S3-compatible storage support (MinIO, DigitalOcean Spaces, etc.) via endpoint configuration
+- add **FAB roles management** feature to declaratively manage custom RBAC roles ([#78](https://github.com/santosr2/airflow-community-chart/pull/78), [docs](docs/faq/security/airflow-roles.md))
+  - add `airflow.roles` value to define custom FAB roles with permissions
+  - add `airflow.rolesUpdate` value to control continuous sync (Deployment) vs one-time sync (Job)
+  - add sync-roles templates (secret, deployment, job) following the sync-users pattern
+  - permissions support both singular and plural forms (`action`/`actions`, `resource`/`resources`) for compact configuration
+  - using both plural forms creates a cartesian product (e.g., `actions: [can_read, can_edit]` + `resources: [DAG, Variables]` = 4 permissions)
+  - **only manages explicitly defined permissions**, preserves all other permissions (DAG-level, UI-added, etc.)
+  - add comprehensive validation for role name and permission fields
+  - only works with FAB auth manager (not SimpleAuthManager)
+  - custom roles can be assigned to users via `airflow.users[].role`
+
+### Fixed
+
+- fix sync user mechanism when using SimpleAuthManager (Airflow 3.1+) ([#13](https://github.com/santosr2/airflow-community-chart/pull/13))
+- fix FAB authentication configuration for Airflow 3.0+ when explicitly enabled
+- fix triggerer script when `triggerer_job` is None
+- fix executor environment variable handling for multiple executors (Airflow 2.10+)
+- fix validation for `airflow.executor` vs `airflow.executors` usage
+
+### Documentation
+
+- update `sshKnownHosts` examples to use new GitHub RSA SSH host key ([#863](https://github.com/airflow-helm/charts/pull/863))
+- add extensive documentation for Airflow 3.0+ components and configuration
+- add FAQ documentation for JWT secrets and SimpleAuthManager
+
+### Migration Notes
+
+#### Airflow 3.0 Migration
+
+- **Architecture changes**: Airflow 3.0 splits webserver into API Server (serves UI) and DAG Processor (parses DAGs)
+- **Required configuration**: Must set `airflow.jwtSecret` (or auto-generated on first install)
+- **Authentication changes**: Airflow 3.1+ defaults to SimpleAuthManager (FAB requires explicit configuration)
+- **Breaking changes**: Several deprecated features removed in Airflow 3.0
+- See [Airflow 3.0 migration guide](./docs/guides/airflow-3-migration.md) for complete instructions
+
+#### Git-Sync v4 Migration
+
+- **Default version**: The chart continues to use git-sync v3.6.9 by default to avoid breaking changes
+- **To use v4**: Set `dags.gitSync.image.tag: v4.5.0` - no other changes required as v4 accepts v3 environment variables
+- **To use v4 features**: Additionally configure `ref`, `period`, `groupWrite`, or `gitConfig` values
+- See [git-sync v4 migration guide](./docs/guides/git-sync-v4-migration.md) for complete instructions
 
 ## [8.9.0] - 2024-04-30
 
 > 🟨 __NOTES__ 🟨
 >
-> - this is the first version of the chart with support for airflow 2.9, along with [pretty much all previous versions of airflow](https://github.com/airflow-helm/charts/tree/main/charts/airflow#airflow-version-support)
+> - this is the first version of the chart with support for airflow 2.9, along with [pretty much all previous versions of airflow](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support)
 > - the default airflow image is now `apache/airflow:2.8.4-python3.9`, but you can still use any supported version of airflow
 > - we have fixed an important bug for airflow <=2.5.3 (introduced in chart version 8.7.1), some liveness probes were creating significant load on the backend database [#853](https://github.com/airflow-helm/charts/pull/853)
 
 > 🟦 __OTHER__ 🟦
 >
 > - If you appreciate the `User-Community Airflow Helm Chart` please consider supporting us!
->    - [give a ⭐ on GitHub](https://github.com/airflow-helm/charts/stargazers)
+>    - [give a ⭐ on GitHub](https://github.com/santosr2/airflow-community-chart/stargazers)
 >    - [give a ⭐ on ArtifactHub](https://artifacthub.io/packages/helm/airflow-helm/airflow)
 
 ### Changed
-- the default airflow image is now `apache/airflow:2.8.4-python3.9` (see the [airflow version support matrix](https://github.com/airflow-helm/charts/tree/main/charts/airflow#airflow-version-support))
+- the default airflow image is now `apache/airflow:2.8.4-python3.9` (see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support))
 - the default git-sync image is now `registry.k8s.io/git-sync/git-sync:v3.6.9`
 - the default pgbouncer image is now `ghcr.io/airflow-helm/pgbouncer:1.22.1-patch.0`
 - the default embedded postgres image is now `ghcr.io/airflow-helm/postgresql-bitnami:11.22-patch.0`
@@ -47,11 +133,11 @@ TBD
 
 > 🟨 __NOTES__ 🟨
 >
-> - this is the first version of the chart with support for airflow 2.7, along with [pretty much all previous versions of airflow](https://github.com/airflow-helm/charts/tree/main/charts/airflow#airflow-version-support)
+> - this is the first version of the chart with support for airflow 2.7, along with [pretty much all previous versions of airflow](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support)
 > - the default airflow image is now `apache/airflow:2.6.3-python3.9`, but you can still use any supported version of airflow
 
 ### Changed
-- the default airflow image is now `apache/airflow:2.6.3-python3.9` (see the [airflow version support matrix](https://github.com/airflow-helm/charts/tree/main/charts/airflow#airflow-version-support))
+- the default airflow image is now `apache/airflow:2.6.3-python3.9` (see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support))
 
 ### Added
 - add liveness probe for celery workers ([#766](https://github.com/airflow-helm/charts/pull/766))
@@ -65,7 +151,7 @@ TBD
 
 > 🟨 __NOTES__ 🟨
 >
-> - this is the first version of the chart with support for airflow 2.6, along with pretty much all previous versions of airflow, see the [airflow version support matrix](https://github.com/airflow-helm/charts/tree/main/charts/airflow#airflow-version-support)
+> - this is the first version of the chart with support for airflow 2.6, along with pretty much all previous versions of airflow, see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support)
 
 ### Fixed
 - fixed liveness probes in airflow 2.6.0 ([#743](https://github.com/airflow-helm/charts/pull/743))
@@ -78,19 +164,19 @@ TBD
 > - if you use a custom `postgresql.image`, please take note that `postgresql.image.registry` is now `ghcr.io` by default (rather than `docker.io`)
 > - if you use "Azure File" for logs persistence, you MUST NOT update to airflow 2.5.1, 2.5.2, or 2.5.3:
 >    - there is an [issue in these versions](https://github.com/apache/airflow/issues/29112) that will cause your tasks to fail
->    - if you wish to use these versions, you will need to use a different method of logs persistence, for example [the `Azure Blob Storage` remote provider](https://github.com/airflow-helm/charts/blob/main/charts/airflow/docs/faq/monitoring/log-persistence.md#option-2---remote-providers)
+>    - if you wish to use these versions, you will need to use a different method of logs persistence, for example [the `Azure Blob Storage` remote provider](https://github.com/santosr2/airflow-community-chart/blob/main/charts/airflow/docs/faq/monitoring/log-persistence.md#option-2---remote-providers)
 
 > 🟨 __NOTES__ 🟨
 >
-> - the default airflow image is now `apache/airflow:2.5.3-python3.8`, but you can still use any supported version of airflow, see the [airflow version support matrix](https://github.com/airflow-helm/charts/tree/main/charts/airflow#airflow-version-support)
+> - the default airflow image is now `apache/airflow:2.5.3-python3.8`, but you can still use any supported version of airflow, see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support)
 > - when upgrading to airflow 2.5, you may wish to rename your kubernetes `aiflow.config` from `AIRFLOW__KUBERNETES__*` to `AIRFLOW__KUBERNETES_EXECUTOR__*`, as the former was deprecated by airflow 2.5
 > - the chart should no longer be forever "out of sync" in apps like ArgoCD, as this issue was resolved by [#718](https://github.com/airflow-helm/charts/pull/718)
 
 ### Changed
-- the default airflow image is now `apache/airflow:2.5.3-python3.8` (see the [airflow version support matrix](https://github.com/airflow-helm/charts/tree/main/charts/airflow#airflow-version-support))
+- the default airflow image is now `apache/airflow:2.5.3-python3.8` (see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support))
 - the default git-sync image is now `registry.k8s.io/git-sync/git-sync:v3.6.5`
 - the default pgbouncer image is now `ghcr.io/airflow-helm/pgbouncer:1.18.0-patch.1`
-- the default embedded postgres image is now `ghcr.io/airflow-helm/postgresql-bitnami:11.16-patch.0` (our new [custom image](https://github.com/airflow-helm/charts/tree/main/images/postgresql-bitnami/11/alpine), with support for ARM64)
+- the default embedded postgres image is now `ghcr.io/airflow-helm/postgresql-bitnami:11.16-patch.0` (our new [custom image](https://github.com/santosr2/airflow-community-chart/tree/main/images/postgresql-bitnami/11/alpine), with support for ARM64)
 - the default embedded redis image is now `bitnami/redis:5.0.14-debian-10-r173`
 - we now generate self-signed certificates for pgbouncer using a startup script, fixing ArgoCD being forever "out of sync" ([#718](https://github.com/airflow-helm/charts/pull/718))
 
@@ -166,7 +252,7 @@ TBD
 > - The [`extraManifests` value](docs/faq/kubernetes/extra-manifests.md) has been significantly improved
 
 ### Changed
-- the default `airflow.image` is now `apache/airflow:2.2.5-python3.8` (see the [airflow version support matrix](https://github.com/airflow-helm/charts/tree/main/charts/airflow#airflow-version-support))
+- the default `airflow.image` is now `apache/airflow:2.2.5-python3.8` (see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support))
 - support helm templating in `extraManifests` by allowing string elements ([docs](docs/faq/kubernetes/extra-manifests.md)) ([#523](https://github.com/airflow-helm/charts/pull/523))
 - update default `dags.gitSync.image.tag` to `v3.5.0` ([#544](https://github.com/airflow-helm/charts/pull/544))
 - update default `pgbouncer.image.tag` to `1.17.0-patch.0` ([#552](https://github.com/airflow-helm/charts/pull/552))
@@ -205,7 +291,7 @@ TBD
 > - If you currently set `scheduler.livenessProbe.timeoutSeconds` or `pgbouncer.livenessProbe.timeoutSeconds` in your values, ensure you update them to the new default of `60`
 
 ### Changed
-- the default `airflow.image` is now `apache/airflow:2.1.4-python3.8` (see the [airflow version support matrix](https://github.com/airflow-helm/charts/tree/main/charts/airflow#airflow-version-support))
+- the default `airflow.image` is now `apache/airflow:2.1.4-python3.8` (see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support))
 
 ### Fixed
 - increase default `timeoutSeconds` for liveness probes ([#496](https://github.com/airflow-helm/charts/pull/496))
@@ -245,7 +331,7 @@ TBD
 > - The new default of `airflow.defaultSecurityContext = {fsGroup: 0}` should prevent filesystem permission errors in mounted volumes
 
 ### Changed
-- the default `airflow.image` is now `apache/airflow:2.1.2-python3.8` (see the [airflow version support matrix](https://github.com/airflow-helm/charts/tree/main/charts/airflow#airflow-version-support))
+- the default `airflow.image` is now `apache/airflow:2.1.2-python3.8` (see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support))
 - the default `airflow.image.gid` is now `0` ([#388](https://github.com/airflow-helm/charts/pull/388))
 - the Kubernetes Ingress now uses `networking.k8s.io/v1` for `apiVersion` by default ([#381](https://github.com/airflow-helm/charts/pull/381))
 - we now include git-sync containers in all Deployments ([#390](https://github.com/airflow-helm/charts/pull/390))
@@ -301,7 +387,7 @@ TBD
 >    - [How to manage airflow pools?](docs/faq/dags/airflow-pools.md)
 
 ### Changed
-- the default `airflow.image` is now `apache/airflow:2.1.1-python3.8` (see the [airflow version support matrix](https://github.com/airflow-helm/charts/tree/main/charts/airflow#airflow-version-support)) ([#286](https://github.com/airflow-helm/charts/issues/286))
+- the default `airflow.image` is now `apache/airflow:2.1.1-python3.8` (see the [airflow version support matrix](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow#airflow-version-support)) ([#286](https://github.com/airflow-helm/charts/issues/286))
 - the `Chart.yaml` now explicitly specifies `apiVersion=v2` (requiring helm 3) ([#278](https://github.com/airflow-helm/charts/issues/278))
 - the `requirements.yaml` file was removed in preference of the `v2` dependencies method (specifying in `Chart.yaml`) ([#278](https://github.com/airflow-helm/charts/issues/278))
 - git-sync containers are now deployed in webserver, regardless of `airflow.legacyCommands` ([#288](https://github.com/airflow-helm/charts/pull/288))
@@ -666,7 +752,7 @@ TBD
 
 > 🟨 __NOTES__ 🟨
 >
-> - This is the first version after migrating to the [new repo](https://github.com/airflow-helm/charts/tree/main/charts/airflow)
+> - This is the first version after migrating to the [new repo](https://github.com/santosr2/airflow-community-chart/tree/main/charts/airflow)
 > - All versions before `7.14.0` are ONLY available in the [legacy repo](https://github.com/helm/charts/tree/master/stable/airflow)
 > - There were NO changes from `7.13.2` in this version
 
@@ -811,40 +897,41 @@ TBD
 >
 > - To read about versions `7.0.0` and before, please see the [legacy repo](https://github.com/helm/charts/tree/master/stable/airflow).
 
-[Unreleased]: https://github.com/airflow-helm/charts/compare/airflow-8.9.0...HEAD
-[8.9.0]: https://github.com/airflow-helm/charts/compare/airflow-8.8.0...airflow-8.9.0
-[8.8.0]: https://github.com/airflow-helm/charts/compare/airflow-8.7.1...airflow-8.8.0
-[8.7.1]: https://github.com/airflow-helm/charts/compare/airflow-8.7.0...airflow-8.7.1
-[8.7.0]: https://github.com/airflow-helm/charts/compare/airflow-8.6.1...airflow-8.7.0
-[8.6.1]: https://github.com/airflow-helm/charts/compare/airflow-8.6.0...airflow-8.6.1
-[8.6.0]: https://github.com/airflow-helm/charts/compare/airflow-8.5.3...airflow-8.6.0
-[8.5.3]: https://github.com/airflow-helm/charts/compare/airflow-8.5.2...airflow-8.5.3
-[8.5.2]: https://github.com/airflow-helm/charts/compare/airflow-8.5.1...airflow-8.5.2
-[8.5.1]: https://github.com/airflow-helm/charts/compare/airflow-8.5.0...airflow-8.5.1
-[8.5.0]: https://github.com/airflow-helm/charts/compare/airflow-8.4.1...airflow-8.5.0
-[8.4.1]: https://github.com/airflow-helm/charts/compare/airflow-8.4.0...airflow-8.4.1
-[8.4.0]: https://github.com/airflow-helm/charts/compare/airflow-8.3.2...airflow-8.4.0
-[8.3.2]: https://github.com/airflow-helm/charts/compare/airflow-8.3.1...airflow-8.3.2
-[8.3.1]: https://github.com/airflow-helm/charts/compare/airflow-8.3.0...airflow-8.3.1
-[8.3.0]: https://github.com/airflow-helm/charts/compare/airflow-8.2.0...airflow-8.3.0
-[8.2.0]: https://github.com/airflow-helm/charts/compare/airflow-8.1.3...airflow-8.2.0
-[8.1.3]: https://github.com/airflow-helm/charts/compare/airflow-8.1.2...airflow-8.1.3
-[8.1.2]: https://github.com/airflow-helm/charts/compare/airflow-8.1.1...airflow-8.1.2
-[8.1.1]: https://github.com/airflow-helm/charts/compare/airflow-8.1.0...airflow-8.1.1
-[8.1.0]: https://github.com/airflow-helm/charts/compare/airflow-8.0.9...airflow-8.1.0
-[8.0.9]: https://github.com/airflow-helm/charts/compare/airflow-8.0.8...airflow-8.0.9
-[8.0.8]: https://github.com/airflow-helm/charts/compare/airflow-8.0.7...airflow-8.0.8
-[8.0.7]: https://github.com/airflow-helm/charts/compare/airflow-8.0.6...airflow-8.0.7
-[8.0.6]: https://github.com/airflow-helm/charts/compare/airflow-8.0.5...airflow-8.0.6
-[8.0.5]: https://github.com/airflow-helm/charts/compare/airflow-8.0.4...airflow-8.0.5
-[8.0.4]: https://github.com/airflow-helm/charts/compare/airflow-8.0.3...airflow-8.0.4
-[8.0.3]: https://github.com/airflow-helm/charts/compare/airflow-8.0.2...airflow-8.0.3
-[8.0.2]: https://github.com/airflow-helm/charts/compare/airflow-8.0.1...airflow-8.0.2
-[8.0.1]: https://github.com/airflow-helm/charts/compare/airflow-8.0.0...airflow-8.0.1
-[8.0.0]: https://github.com/airflow-helm/charts/compare/airflow-7.16.0...airflow-8.0.0
-[7.16.0]: https://github.com/airflow-helm/charts/compare/airflow-7.15.0...airflow-7.16.0
-[7.15.0]: https://github.com/airflow-helm/charts/compare/airflow-7.14.3...airflow-7.15.0
-[7.14.3]: https://github.com/airflow-helm/charts/compare/airflow-7.14.2...airflow-7.14.3
-[7.14.2]: https://github.com/airflow-helm/charts/compare/airflow-7.14.1...airflow-7.14.2
-[7.14.1]: https://github.com/airflow-helm/charts/compare/airflow-7.14.0...airflow-7.14.1
-[7.14.0]: https://github.com/airflow-helm/charts/compare/airflow-7.14.0...airflow-7.14.0
+[Unreleased]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.10.0...HEAD
+[8.10.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.9.0...airflow-8.10.0
+[8.9.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.8.0...airflow-8.9.0
+[8.8.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.7.1...airflow-8.8.0
+[8.7.1]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.7.0...airflow-8.7.1
+[8.7.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.6.1...airflow-8.7.0
+[8.6.1]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.6.0...airflow-8.6.1
+[8.6.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.5.3...airflow-8.6.0
+[8.5.3]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.5.2...airflow-8.5.3
+[8.5.2]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.5.1...airflow-8.5.2
+[8.5.1]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.5.0...airflow-8.5.1
+[8.5.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.4.1...airflow-8.5.0
+[8.4.1]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.4.0...airflow-8.4.1
+[8.4.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.3.2...airflow-8.4.0
+[8.3.2]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.3.1...airflow-8.3.2
+[8.3.1]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.3.0...airflow-8.3.1
+[8.3.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.2.0...airflow-8.3.0
+[8.2.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.1.3...airflow-8.2.0
+[8.1.3]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.1.2...airflow-8.1.3
+[8.1.2]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.1.1...airflow-8.1.2
+[8.1.1]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.1.0...airflow-8.1.1
+[8.1.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.0.9...airflow-8.1.0
+[8.0.9]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.0.8...airflow-8.0.9
+[8.0.8]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.0.7...airflow-8.0.8
+[8.0.7]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.0.6...airflow-8.0.7
+[8.0.6]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.0.5...airflow-8.0.6
+[8.0.5]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.0.4...airflow-8.0.5
+[8.0.4]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.0.3...airflow-8.0.4
+[8.0.3]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.0.2...airflow-8.0.3
+[8.0.2]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.0.1...airflow-8.0.2
+[8.0.1]: https://github.com/santosr2/airflow-community-chart/compare/airflow-8.0.0...airflow-8.0.1
+[8.0.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-7.16.0...airflow-8.0.0
+[7.16.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-7.15.0...airflow-7.16.0
+[7.15.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-7.14.3...airflow-7.15.0
+[7.14.3]: https://github.com/santosr2/airflow-community-chart/compare/airflow-7.14.2...airflow-7.14.3
+[7.14.2]: https://github.com/santosr2/airflow-community-chart/compare/airflow-7.14.1...airflow-7.14.2
+[7.14.1]: https://github.com/santosr2/airflow-community-chart/compare/airflow-7.14.0...airflow-7.14.1
+[7.14.0]: https://github.com/santosr2/airflow-community-chart/compare/airflow-7.14.0...airflow-7.14.0
