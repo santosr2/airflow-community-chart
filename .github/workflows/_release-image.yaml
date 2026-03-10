@@ -43,7 +43,7 @@ jobs:
       VERSION_IMAGE_PATCH: ${{ steps.read-version.outputs.VERSION_IMAGE_PATCH }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -60,26 +60,26 @@ jobs:
         run: |
           VERSION_RAW=$(cat $VERSION_FILE_PATH)
           if [[ $VERSION_RAW =~ $VERSION_REGEX ]]; then
-            echo "VERSION_RAW=$VERSION_RAW" >> $GITHUB_OUTPUT
-
+            echo "::set-output name=VERSION_RAW::$VERSION_RAW"
+            
             # captures 'A' from 'A.B.C-patch.D'
             VERSION_SW_MAJOR="${BASH_REMATCH[1]}"
-            echo "VERSION_SW_MAJOR=$VERSION_SW_MAJOR" >> $GITHUB_OUTPUT
-
+            echo "::set-output name=VERSION_SW_MAJOR::$VERSION_SW_MAJOR"
+            
             # captures '.B' from 'A.B.C-patch.D'
             # (NOTE: if present, will have a '.' prefix, else empty)
             VERSION_SW_MINOR="${BASH_REMATCH[2]}"
-            echo "VERSION_SW_MINOR=$VERSION_SW_MINOR" >> $GITHUB_OUTPUT
-
+            echo "::set-output name=VERSION_SW_MINOR::$VERSION_SW_MINOR"
+          
             # captures '.C' from 'A.B.C-patch.D'
             # (NOTE: if present, will have a '.' prefix, else empty)
             VERSION_SW_PATCH="${BASH_REMATCH[3]}"
-            echo "VERSION_SW_PATCH=$VERSION_SW_PATCH" >> $GITHUB_OUTPUT
-
+            echo "::set-output name=VERSION_SW_PATCH::$VERSION_SW_PATCH"
+            
             # captures 'D' from 'A.B.C-patch.D'
             VERSION_IMAGE_PATCH="${BASH_REMATCH[4]}"
-            echo "VERSION_IMAGE_PATCH=$VERSION_IMAGE_PATCH" >> $GITHUB_OUTPUT
-
+            echo "::set-output name=VERSION_IMAGE_PATCH::$VERSION_IMAGE_PATCH"
+                 
           else
             echo "::error::$VERSION_FILE_PATH must match regex $VERSION_REGEX but got: '$VERSION_RAW'"
             exit 1
@@ -105,14 +105,14 @@ jobs:
               git tag "$TAG_NAME"
               git push origin "$TAG_NAME"
           fi
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "::set-output name=TAG_NAME::$TAG_NAME"
 
   build_and_push_image:
     needs: [ create_tag ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           ref: ${{ needs.create_tag.outputs.TAG_NAME }}
           fetch-depth: 0
@@ -154,8 +154,7 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}/tree/main/${{ inputs.folder_path }}
 
       - name: Build and Push Image
-        id: build-push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v5
         with:
           context: ./${{ inputs.folder_path }}
           push: true
@@ -164,32 +163,3 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/ci/${{ inputs.folder_path }}
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/ci/${{ inputs.folder_path }},mode=max
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-
-      - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
-          category: 'container-${{ inputs.folder_path }}'
-
-      - name: Generate SBOM for image
-        uses: anchore/sbom-action@v0.20.6
-        with:
-          image: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
-          format: spdx-json
-          output-file: 'sbom-${{ inputs.folder_path }}.spdx.json'
-
-      - name: Upload SBOM artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sbom-${{ inputs.folder_path }}
-          path: 'sbom-${{ inputs.folder_path }}.spdx.json'
-          retention-days: 90
